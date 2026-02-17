@@ -15,7 +15,6 @@
             --glass: rgba(10, 2, 20, 0.85); 
             --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
             --safe-green: #00ff99;
-            --warning-orange: #ff9500;
         }
 
         body { 
@@ -23,94 +22,74 @@
             font-family: 'Outfit', sans-serif; 
             background: var(--bg-main);
             color: #fff; overflow: hidden; height: 100vh;
-            transition: opacity 0.5s ease, filter 0.5s ease;
-        }
-
-        /* Interactive Mouse Glow */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: radial-gradient(circle 150px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsla(var(--accent-hue), 100%, 50%, 0.15), transparent 80%);
-            pointer-events: none;
-            z-index: 5;
         }
 
         #bg-layer { position: fixed; inset: 0; z-index: -1; background-size: cover !important; background-position: center !important; }
+        
+        /* Dashboard Content */
+        #main-content { display: none; text-align: center; padding-top: 80px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; }
+        h1 { font-family: 'Orbitron'; font-size: 4.5rem; font-weight: 900; margin: 10px 0; letter-spacing: 12px; }
 
-        /* Proxy-Style Search Bar */
-        .search-container {
-            margin: 40px auto;
-            position: relative;
-            width: 550px;
-            max-width: 90%;
-        }
-
+        /* Search Bar */
+        .search-container { margin: 40px auto; width: 550px; max-width: 90%; }
         #search-box { 
-            width: 100%; 
-            padding: 18px 25px; 
-            background: rgba(0,0,0,0.6); 
-            border: 2px solid var(--border); 
-            border-radius: 12px; 
-            color: white; 
-            font-family: 'JetBrains Mono'; 
-            font-size: 1rem;
-            outline: none; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%; padding: 18px 25px; background: rgba(0,0,0,0.6); 
+            border: 2px solid var(--border); border-radius: 12px; color: white; 
+            font-family: 'JetBrains Mono'; font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        #search-box:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+
+        /* Navigation */
+        .nav-btn { display: inline-block; margin: 10px; padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.75rem; border-radius: 4px; transition: 0.3s; }
+        .nav-btn:hover { background: var(--accent); transform: scale(1.05); }
+
+        /* IFRAME VIEWER */
+        #frame-container {
+            position: fixed; inset: 0; background: #fff; z-index: 2000; display: none;
+        }
+        #proxy-frame { width: 100%; height: 100%; border: none; }
+        #frame-tools {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; z-index: 2001; opacity: 0.3; transition: 0.3s;
+        }
+        #frame-tools:hover { opacity: 1; }
+        .tool-btn { 
+            padding: 5px 15px; background: #000; color: #fff; border: 1px solid var(--accent);
+            border-radius: 20px; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer;
         }
 
-        #search-box:focus { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 30px var(--accent-glow);
-            transform: translateY(-2px);
-        }
-
-        /* Rest of the UI Styles */
+        /* UI Overlays */
         #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
-        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; display: flex; align-items: center; gap: 8px; }
+        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; }
         
         #widget-drawer { 
             position: fixed; right: -320px; top: 80px; bottom: 80px; width: 300px; 
             background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border); 
-            border-radius: 20px 0 0 20px; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-            z-index: 9999; padding: 25px; box-sizing: border-box; 
+            border-radius: 20px 0 0 20px; transition: 0.5s; z-index: 9999; padding: 25px; box-sizing: border-box; 
         }
         #widget-drawer.open { right: 0; }
-        #drawer-tab { 
-            position: absolute; left: -40px; top: 50%; transform: translateY(-50%); 
-            background: var(--accent); color: white; width: 40px; height: 120px; 
-            border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; writing-mode: vertical-rl; 
-        }
-
-        #main-content { display: none; text-align: center; padding-top: 80px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4.5rem; font-weight: 900; margin: 10px 0; letter-spacing: 12px; }
-
-        .nav-btn { display: inline-block; margin: 10px; padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.75rem; letter-spacing: 2px; transition: 0.3s; border-radius: 4px; }
-        .nav-btn:hover { background: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.05); }
-
-        .card { background: var(--glass); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: left; margin: 10px; }
-        .action-btn { width: 100%; padding: 10px; margin-top: 8px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.65rem; transition: 0.2s; }
-        .action-btn:hover { background: var(--accent); color: white; }
+        #drawer-tab { position: absolute; left: -40px; top: 50%; transform: translateY(-50%); background: var(--accent); width: 40px; height: 120px; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; writing-mode: vertical-rl; }
 
         #auth-overlay { position:fixed; inset:0; background:#05010a; display:flex; justify-content:center; align-items:center; z-index:10000; }
         #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
         .star { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; }
     </style>
 </head>
-<body onmousemove="handleMouseMove(event)">
+<body>
     <div id="bg-layer"></div>
     <div id="stars-canvas"></div>
 
+    <div id="frame-container">
+        <div id="frame-tools">
+            <button class="tool-btn" onclick="closeFrame()">✕ EXIT TO GALAXY</button>
+            <button class="tool-btn" onclick="refreshFrame()">↻ RELOAD</button>
+        </div>
+        <iframe id="proxy-frame" src=""></iframe>
+    </div>
+
     <div id="neural-header">
-        <div style="display: flex; gap: 10px;">
-            <div class="header-pill" id="neural-clock">00:00:00</div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <div class="header-pill" id="pilot-id">PILOT: UNKNOWN</div>
-        </div>
+        <div class="header-pill" id="neural-clock">00:00:00</div>
+        <div class="header-pill" id="pilot-id">PILOT: UNKNOWN</div>
     </div>
 
     <div id="widget-drawer">
@@ -123,43 +102,38 @@
         </select>
         <label style="font-size: 0.6rem;">DATABASE UPLINK:</label>
         <select id="engine-selector" style="width: 100%; background: black; color: var(--accent); border: 1px solid var(--border); padding: 5px; margin-bottom: 15px;">
-            <option value="https://www.google.com/search?q=">GOOGLE</option>
-            <option value="https://duckduckgo.com/?q=">DUCKDUCKGO</option>
+            <option value="https://www.google.com/search?igu=1&q=">GOOGLE (EMBEDDED)</option>
+            <option value="https://www.bing.com/search?q=">BING</option>
         </select>
         <label style="font-size: 0.6rem;">NEURAL HUE:</label>
         <input type="range" id="hue-slider" min="0" max="360" value="280" oninput="updateHue(this.value)" style="width:100%;">
-        <button class="action-btn" onclick="clearData()">WIPE CACHE (RESET)</button>
+        <button onclick="clearData()" style="width:100%; margin-top:20px; cursor:pointer;">WIPE CACHE</button>
     </div>
 
     <div id="auth-overlay">
-        <div class="card" style="width:320px; text-align:center;">
+        <div style="background:var(--glass); padding:30px; border:1px solid var(--border); border-radius:15px; text-align:center;">
             <h2 style="font-family:'Orbitron';">GALAXY CORE</h2>
             <input type="text" id="user-in" placeholder="CALLSIGN" style="width:80%; padding:12px; margin:20px 0; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--border); text-align:center;">
-            <button onclick="login()" class="action-btn" style="background:var(--accent); color:white;">BOOT SEQUENCE</button>
+            <button onclick="login()" style="width:100%; padding:10px; background:var(--accent); color:white; border:none; cursor:pointer; font-family:'Orbitron';">BOOT SEQUENCE</button>
         </div>
     </div>
 
     <div id="main-content">
-        <h1 id="glitch-title">GALAXY PRO</h1>
-        
+        <h1>GALAXY PRO</h1>
         <div class="search-container">
-            <input type="text" id="search-box" placeholder="Enter URL or search the web..." onkeydown="if(event.key==='Enter') processSearch()">
+            <input type="text" id="search-box" placeholder="Enter URL or Search Query..." onkeydown="if(event.key==='Enter') processSearch()">
         </div>
-
         <div>
-            <a href="https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games" target="_blank" class="nav-btn">GAMES</a>
-            <a href="https://sflix.ps/" target="_blank" class="nav-btn">MOVIES</a>
-            <a href="https://sites.google.com/fcpsschools.net/math-7-honors-courses/math-7-honors-courses" target="_blank" class="nav-btn">PROXIES</a>
+            <a href="#" onclick="launchProxy('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')" class="nav-btn">GAMES</a>
+            <a href="#" onclick="launchProxy('https://sflix.ps/')" class="nav-btn">MOVIES</a>
         </div>
     </div>
 
     <script>
-        // LOAD SAVED DATA
         window.onload = () => {
             const savedUser = localStorage.getItem('pilotCallsign');
             const savedHue = localStorage.getItem('neuralHue');
             const savedCloak = localStorage.getItem('tabCloak');
-
             if (savedHue) { updateHue(savedHue); document.getElementById('hue-slider').value = savedHue; }
             if (savedCloak) { applyCloak(savedCloak); document.getElementById('cloak-selector').value = savedCloak; }
             if (savedUser) { login(savedUser); }
@@ -168,20 +142,32 @@
         function processSearch() {
             const input = document.getElementById('search-box').value.trim();
             const engine = document.getElementById('engine-selector').value;
-            
             if (!input) return;
 
-            // Check if input is a URL (contains a dot and no spaces)
-            const isUrl = input.includes('.') && !input.includes(' ');
-            
-            if (isUrl) {
-                let url = input;
-                if (!url.startsWith('http')) url = 'https://' + url;
-                window.open(url, '_blank');
+            let targetUrl = "";
+            if (input.includes('.') && !input.includes(' ')) {
+                targetUrl = input.startsWith('http') ? input : 'https://' + input;
             } else {
-                // Otherwise, perform search
-                window.open(engine + encodeURIComponent(input), '_blank');
+                targetUrl = engine + encodeURIComponent(input);
             }
+            launchProxy(targetUrl);
+        }
+
+        function launchProxy(url) {
+            const container = document.getElementById('frame-container');
+            const frame = document.getElementById('proxy-frame');
+            frame.src = url;
+            container.style.display = 'block';
+        }
+
+        function closeFrame() {
+            document.getElementById('frame-container').style.display = 'none';
+            document.getElementById('proxy-frame').src = "";
+        }
+
+        function refreshFrame() {
+            const frame = document.getElementById('proxy-frame');
+            frame.src = frame.src;
         }
 
         function login(storedUser = null) {
@@ -212,10 +198,6 @@
         }
 
         function toggleDrawer() { document.getElementById('widget-drawer').classList.toggle('open'); }
-        function handleMouseMove(e) {
-            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-        }
 
         function setStars() {
             const container = document.getElementById('stars-canvas');
