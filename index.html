@@ -65,7 +65,7 @@
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const query = document.getElementById('search-box').value;
-            // No more cors.io! We go straight to the source.
+            // No more broken links—this goes straight to DuckDuckGo
             const target = 'https://duckduckgo.com/?q=' + encodeURIComponent(query);
             launchUplink(target);
         });
