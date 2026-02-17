@@ -5,195 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/@ungap/custom-elements-builtin"></script>
     <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 
     <style>
         :root {
-            --bg: #05010a;
-            --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.6);
-            --panel: rgba(15, 5, 30, 0.9);
-            --border: rgba(168, 85, 247, 0.3);
+            --bg: #030005;
+            --accent: #bc13fe;
+            --accent-glow: rgba(188, 19, 254, 0.5);
+            --panel: rgba(10, 5, 20, 0.95);
+            --border: rgba(188, 19, 254, 0.2);
             --text: #ffffff;
         }
 
-        * { box-sizing: border-box; transition: all 0.2s ease; }
+        * { box-sizing: border-box; transition: all 0.2s ease; cursor: crosshair; }
 
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Outfit', sans-serif;
-            overflow: hidden;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--bg); color: var(--text);
+            font-family: 'Outfit', sans-serif; overflow: hidden;
         }
 
-        /* SPACE BACKGROUND ENGINE */
-        #star-field {
-            position: fixed; inset: 0;
-            z-index: -1;
-            background: radial-gradient(circle at center, #1a0b2e 0%, #05010a 100%);
-        }
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-        }
+        /* DYNAMIC STARFIELD */
+        #star-field { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, #0f021a 0%, #030005 100%); }
+        .star { position: absolute; background: white; border-radius: 50%; pointer-events: none; }
 
-        /* MAIN UI */
-        #galaxy-home {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            height: 100vh; text-align: center;
+        /* HOME SCREEN UI (Pezatah Style) */
+        #main-home {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh; text-align: center;
             z-index: 10; position: relative;
         }
 
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 5rem; font-weight: 900;
-            letter-spacing: 15px;
-            margin-bottom: 40px;
+        .hero-title {
+            font-family: 'Orbitron', sans-serif; font-size: 5.5rem; font-weight: 900;
+            letter-spacing: 20px; margin-bottom: 10px;
             background: linear-gradient(to bottom, #fff, var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px var(--accent-glow));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px var(--accent-glow));
         }
 
-        .search-wrapper {
-            width: 100%; max-width: 600px;
-            position: relative;
-        }
+        .subtitle { font-family: 'JetBrains Mono'; color: var(--accent); letter-spacing: 5px; margin-bottom: 50px; opacity: 0.8; }
 
-        #search-input {
-            width: 100%;
-            padding: 22px 30px;
-            font-size: 1.2rem;
-            background: var(--panel);
-            border: 2px solid var(--border);
-            border-radius: 100px;
-            color: white;
-            outline: none;
-            font-family: 'JetBrains Mono', monospace;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .search-container { width: 100%; max-width: 700px; position: relative; }
+        #home-search {
+            width: 100%; padding: 25px 35px; font-size: 1.1rem;
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 15px; color: white; outline: none;
+            font-family: 'JetBrains Mono'; backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
+        #home-search:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
 
-        #search-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 25px var(--accent-glow);
-        }
-
-        .quick-actions {
-            margin-top: 35px;
-            display: flex; gap: 20px;
-        }
-
-        .nav-card {
-            padding: 12px 30px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            font-family: 'Orbitron';
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .nav-card:hover {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px var(--accent-glow);
-        }
-
-        /* PROXY VIEWPORT LAYER */
+        /* PROXY VIEWPORT (The "Uplink") */
         #proxy-layer {
-            position: fixed; inset: 0;
-            z-index: 1000;
-            background: #000;
-            display: none;
-            flex-direction: column;
+            position: fixed; inset: 0; z-index: 2000;
+            background: #000; display: none; flex-direction: column;
         }
 
-        #proxy-bar {
-            height: 60px;
-            background: #0a0515;
-            border-bottom: 2px solid var(--accent);
-            display: flex; align-items: center;
-            padding: 0 20px; gap: 20px;
+        /* PROXY NAVIGATION BAR */
+        #proxy-nav {
+            height: 65px; background: #080210; border-bottom: 1px solid var(--accent);
+            display: flex; align-items: center; padding: 0 20px; gap: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
 
-        .status-light {
-            width: 10px; height: 10px;
-            background: #00ffaa;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #00ffaa;
+        .nav-icon { width: 35px; height: 35px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); font-weight: bold; }
+        .nav-icon:hover { background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent-glow); }
+
+        #proxy-address-bar {
+            flex-grow: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 15px; color: #aaa;
+            font-family: 'JetBrains Mono'; font-size: 0.8rem; overflow: hidden; white-space: nowrap;
         }
 
-        #uplink-title {
-            font-family: 'Orbitron';
-            font-size: 0.7rem;
-            color: var(--accent);
-            letter-spacing: 2px;
-        }
+        #proxy-frame-container { flex-grow: 1; background: #fff; }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        .control-btn {
-            padding: 8px 18px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-family: 'Orbitron';
-            font-size: 0.7rem;
-        }
-
-        #exit-btn { background: #ff3366; color: white; }
-        #exit-btn:hover { background: white; color: #ff3366; }
-
-        #proxy-frame-container {
-            flex-grow: 1;
-            position: relative;
-        }
-
-        /* The "Skeleton Key" Frame */
-        iframe {
-            width: 100%; height: 100%;
-            border: none;
-            background: white;
-        }
+        .btn-terminate { background: #ff2e63; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; }
+        .btn-terminate:hover { background: white; color: #ff2e63; }
     </style>
 </head>
 <body>
 
     <div id="star-field"></div>
 
-    <div id="galaxy-home">
-        <div class="logo">GALAXY PRO</div>
+    <div id="main-home">
+        <div class="hero-title">GALAXY</div>
+        <div class="subtitle">PREMIUM PROXY NETWORK</div>
         
-        <div class="search-wrapper">
-            <form id="proxy-form">
-                <input type="text" id="search-input" placeholder="Enter URL or Search Query..." autocomplete="off">
+        <div class="search-container">
+            <form id="home-form">
+                <input type="text" id="home-search" placeholder="Enter URL or Search Query..." autocomplete="off">
             </form>
         </div>
 
-        <div class="quick-actions">
-            <div class="nav-card" onclick="openNode('https://duckduckgo.com')">DuckDuckGo</div>
-            <div class="nav-card" onclick="openNode('https://www.bing.com')">Bing</div>
-            <div class="nav-card" onclick="openNode('https://poki.com')">Games</div>
+        <div style="margin-top: 40px; display: flex; gap: 20px;">
+            <button onclick="launchNode('https://duckduckgo.com')" style="background:none; border: 1px solid var(--accent); color:white; padding: 10px 25px; border-radius: 5px; font-family:'Orbitron'; font-size: 0.7rem;">DUCKDUCKGO</button>
+            <button onclick="launchNode('https://poki.com')" style="background:none; border: 1px solid var(--accent); color:white; padding: 10px 25px; border-radius: 5px; font-family:'Orbitron'; font-size: 0.7rem;">GAMES</button>
         </div>
     </div>
 
     <div id="proxy-layer">
-        <div id="proxy-bar">
-            <div class="status-light"></div>
-            <div id="uplink-title">GALAXY_SECURE_UPLINK::CONNECTED</div>
-            <div style="flex-grow: 1;"></div>
-            <button class="control-btn" onclick="location.reload()" style="background:var(--accent); color:white;">HOME</button>
-            <button class="control-btn" id="exit-btn" onclick="closeNode()">TERMINATE</button>
+        <div id="proxy-nav">
+            <div class="nav-icon" onclick="closeNode()">H</div>
+            <div class="nav-icon" onclick="document.getElementById('proxy-frame').contentWindow.location.reload()">R</div>
+            <div id="proxy-address-bar">SECURE_CONNECTION::ESTABLISHED</div>
+            <button class="btn-terminate" onclick="closeNode()">TERMINATE</button>
         </div>
         <div id="proxy-frame-container">
             <iframe is="x-frame-bypass" id="proxy-frame"></iframe>
@@ -201,58 +121,51 @@
     </div>
 
     <script>
-        const home = document.getElementById('galaxy-home');
         const proxyLayer = document.getElementById('proxy-layer');
-        const frame = document.getElementById('proxy-frame');
-        const input = document.getElementById('search-input');
-        const form = document.getElementById('proxy-form');
+        const proxyFrame = document.getElementById('proxy-frame');
+        const addressBar = document.getElementById('proxy-address-bar');
 
-        // STAR FIELD GENERATOR
-        function createStars() {
+        function launchNode(url) {
+            proxyLayer.style.display = 'flex';
+            proxyFrame.src = url;
+            addressBar.innerText = "ENCRYPTED_UPLINK -> " + url.toUpperCase();
+        }
+
+        function closeNode() {
+            proxyLayer.style.display = 'none';
+            proxyFrame.src = '';
+        }
+
+        document.getElementById('home-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('home-search').value.trim();
+            if(!input) return;
+
+            let targetUrl;
+            if(input.includes('.') && !input.includes(' ')) {
+                targetUrl = input.startsWith('http') ? input : 'https://' + input;
+            } else {
+                // Pezatah style: search query goes to DuckDuckGo
+                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(input);
+            }
+            launchNode(targetUrl);
+        });
+
+        // STARFIELD ANIMATION
+        function initStars() {
             const field = document.getElementById('star-field');
             for(let i=0; i<150; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
-                const size = Math.random() * 3 + 'px';
-                star.style.width = size;
-                star.style.height = size;
+                const size = Math.random() * 2 + 'px';
+                star.style.width = size; star.style.height = size;
                 star.style.top = Math.random() * 100 + 'vh';
                 star.style.left = Math.random() * 100 + 'vw';
                 star.style.opacity = Math.random();
                 field.appendChild(star);
             }
         }
-
-        // PROXY LOGIC
-        function openNode(url) {
-            console.log("Initializing Uplink to: " + url);
-            proxyLayer.style.display = 'flex';
-            home.style.display = 'none';
-            frame.src = url;
-        }
-
-        function closeNode() {
-            proxyLayer.style.display = 'none';
-            home.style.display = 'flex';
-            frame.src = '';
-        }
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const val = input.value.trim();
-            if(!val) return;
-
-            let targetUrl;
-            if(val.includes('.') && !val.includes(' ')) {
-                targetUrl = val.startsWith('http') ? val : 'https://' + val;
-            } else {
-                // Using DuckDuckGo search as the default
-                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(val);
-            }
-            openNode(targetUrl);
-        });
-
-        createStars();
+        initStars();
     </script>
 </body>
 </html>
