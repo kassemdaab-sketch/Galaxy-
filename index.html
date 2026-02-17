@@ -2,107 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         body { 
-            margin: 0; background: #05010a; color: white; 
-            font-family: 'JetBrains Mono', monospace; 
-            display: flex; align-items: center; justify-content: center; height: 100vh;
+            background: #05010a; color: #bc13fe; 
+            font-family: 'Courier New', monospace; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; height: 100vh; margin: 0; 
         }
-        .boot-screen { text-align: center; }
-        .spinner { 
-            width: 40px; height: 40px; border: 4px solid rgba(188, 19, 254, 0.1); 
-            border-top: 4px solid #bc13fe; border-radius: 50%; 
-            animation: spin 1s linear infinite; margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        h1 { font-family: 'Orbitron'; letter-spacing: 5px; font-size: 1.5rem; }
-        #manual-trigger { 
-            display: none; padding: 10px 20px; background: #bc13fe; 
-            border: none; color: white; cursor: pointer; font-family: 'Orbitron';
+        .loading-text { letter-spacing: 3px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        button { 
+            display: none; padding: 15px 30px; background: #bc13fe; 
+            color: white; border: none; cursor: pointer; font-weight: bold; 
         }
     </style>
 </head>
 <body>
 
-    <div class="boot-screen">
-        <h1 id="status-text">INITIALIZING STEALTH...</h1>
-        <div class="spinner" id="loader"></div>
-        <button id="manual-trigger" onclick="deployGalaxy()">CLICK TO MANUALLY INITIALIZE</button>
-        <p style="font-size: 0.7rem; color: #555; margin-top: 10px;">(Please allow pop-ups if prompted)</p>
-    </div>
+    <h2 id="status" class="loading-text">DEPLOYING STEALTH INTERFACE...</h2>
+    <button id="retry" onclick="startCloak()">RE-INITIALIZE GALAXY</button>
 
     <script>
-        const decoys = [
-            "https://classroom.google.com",
-            "https://www.khanacademy.org",
-            "https://canvas.instructure.com"
-        ];
+        // Start the process as soon as the page loads
+        window.onload = startCloak;
 
-        // This runs the moment the page loads
-        window.onload = function() {
-            setTimeout(deployGalaxy, 1500);
-        };
-
-        function deployGalaxy() {
-            const decoy = decoys[Math.floor(Math.random() * decoys.length)];
+        function startCloak() {
+            const win = window.open('about:blank', '_blank');
             
-            // 1. Open the decoy window
-            const win = window.open(decoy, '_blank');
-
-            if (!win || win.closed || typeof win.closed === 'undefined') {
-                // If the browser blocked the auto-popup, show the manual button
-                document.getElementById('status-text').innerText = "STEALTH BLOCKED BY BROWSER";
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('manual-trigger').style.display = 'inline-block';
+            if (!win) {
+                document.getElementById('status').innerText = "POP-UP BLOCKED";
+                document.getElementById('retry').style.display = "block";
                 return;
             }
 
-            // 2. Hijack the window to about:blank
-            win.location.replace("about:blank");
+            // Define the Full Galaxy Pro Interface
+            const galaxyContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Google Docs</title>
+                    <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
+                    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+                    <style>
+                        body { background: #05010a; color: white; margin: 0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                        canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+                        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 12px; margin: 0; color: #bc13fe; text-shadow: 0 0 20px rgba(188, 19, 254, 0.5); }
+                        .search-container { margin-top: 40px; position: relative; }
+                        input { width: 500px; padding: 18px 25px; border-radius: 50px; border: 2px solid rgba(188, 19, 254, 0.3); background: rgba(0,0,0,0.6); color: white; font-size: 1rem; outline: none; transition: 0.3s; text-align: center; }
+                        input:focus { border-color: #bc13fe; box-shadow: 0 0 30px rgba(188, 19, 254, 0.4); }
+                        .btns { margin-top: 30px; }
+                        button { padding: 10px 25px; margin: 5px; background: transparent; border: 1px solid #bc13fe; color: white; cursor: pointer; font-family: 'Orbitron'; transition: 0.3s; }
+                        button:hover { background: #bc13fe; box-shadow: 0 0 15px #bc13fe; }
+                    </style>
+                </head>
+                <body>
+                    <canvas id="s"></canvas>
+                    <h1>GALAXY PRO</h1>
+                    <div class="search-container">
+                        <input type="text" id="q" placeholder="Search or Enter URL..." autofocus>
+                    </div>
+                    <div class="btns">
+                        <button onclick="launch('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')">GAMES</button>
+                        <button onclick="launch('https://sflix.ps/')">MOVIES</button>
+                    </div>
 
-            // 3. Inject the Galaxy Interface into the new cloaked tab
-            const checker = setInterval(() => {
-                if (win.location.href === "about:blank") {
-                    clearInterval(checker);
-                    
-                    const doc = win.document;
-                    doc.title = "Google Docs";
-                    const link = doc.createElement('link');
-                    link.rel = 'icon';
-                    link.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
-                    doc.head.appendChild(link);
+                    <script>
+                        // Star background logic
+                        const c = document.getElementById('s');
+                        const x = c.getContext('2d');
+                        let w = c.width = window.innerWidth;
+                        let h = c.height = window.innerHeight;
+                        const stars = Array(100).fill().map(() => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*2}));
+                        function d() {
+                            x.clearRect(0,0,w,h); x.fillStyle = "white";
+                            stars.forEach(p => { x.beginPath(); x.arc(p.x, p.y, p.r, 0, Math.PI*2); x.fill(); p.y += 0.3; if(p.y > h) p.y = 0; });
+                            requestAnimationFrame(d);
+                        }
+                        d();
 
-                    // Injecting the actual Galaxy CSS and HTML content
-                    doc.body.innerHTML = `
-                        <div style="background:#05010a; color:white; height:100vh; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                            <h1 style="font-family:Orbitron; letter-spacing:10px;">GALAXY PRO</h1>
-                            <input type="text" id="proxy-in" placeholder="Search or URL..." style="padding:15px; width:400px; border-radius:50px; border:1px solid #bc13fe; background:transparent; color:white; text-align:center;">
-                            <div style="margin-top:20px;">
-                                <button onclick="launch('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')" style="padding:10px 20px; background:#bc13fe; border:none; color:white; cursor:pointer;">GAMES</button>
-                            </div>
-                        </div>
-                        <script>
-                            function launch(url) {
-                                document.body.innerHTML = '<iframe src="' + url + '" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none;"></iframe>';
+                        // Launch Logic: Switches title to educational app upon search
+                        function launch(url) {
+                            const decoys = ["Google Classroom", "Canvas", "Edgenuity", "Khan Academy"];
+                            const favicons = [
+                                "https://ssl.gstatic.com/classroom/favicon.png",
+                                "https://instructure-uploads.s3.amazonaws.com/account_15800000000000001/attachments/637412/favicon.ico",
+                                "https://www.edgenuity.com/favicon.ico",
+                                "https://www.khanacademy.org/favicon.ico"
+                            ];
+                            const rand = Math.floor(Math.random() * decoys.length);
+                            
+                            // Change tab identity
+                            document.title = decoys[rand];
+                            let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                            link.type = 'image/x-icon';
+                            link.rel = 'shortcut icon';
+                            link.href = favicons[rand];
+                            document.getElementsByTagName('head')[0].appendChild(link);
+
+                            // Load Content
+                            document.body.innerHTML = '<iframe src="' + url + '" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden;"></iframe>';
+                        }
+
+                        document.getElementById('q').addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter') {
+                                let v = e.target.value;
+                                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
+                                launch(u);
                             }
-                            document.getElementById('proxy-in').addEventListener('keydown', (e) => {
-                                if(e.key === 'Enter') {
-                                    let val = e.target.value;
-                                    let url = val.includes('.') ? (val.startsWith('http') ? val : 'https://'+val) : 'https://www.bing.com/search?q='+val;
-                                    launch(url);
-                                }
-                            });
-                        <\/script>
-                    `;
-                    
-                    // 4. Redirect the original "trigger" tab to something safe
-                    window.location.replace("https://google.com");
-                }
-            }, 100);
+                        });
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            // Inject the Galaxy Pro code into the about:blank window
+            win.document.open();
+            win.document.write(galaxyContent);
+            win.document.close();
+
+            // Redirect the original tab to a safe "Google" page immediately
+            window.location.replace("https://www.google.com");
         }
     </script>
 </body>
