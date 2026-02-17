@@ -5,102 +5,96 @@
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
-        body { 
-            background: #05010a; color: #bc13fe; 
-            font-family: 'Courier New', monospace; 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; height: 100vh; margin: 0; 
+        body { margin: 0; background: #05010a; overflow: hidden; }
+        /* Falling Stars for the loader */
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            opacity: 0.5; animation: fall linear infinite;
         }
-        .status { letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem; }
-        #init-btn { 
-            margin-top: 20px; padding: 12px 25px; background: #bc13fe; 
-            color: white; border: none; cursor: pointer; font-weight: bold;
-            border-radius: 4px;
+        @keyframes fall {
+            from { transform: translateY(-10vh); }
+            to { transform: translateY(110vh); }
         }
     </style>
 </head>
 <body>
-
-    <div id="status" class="status">Verifying Neural Link...</div>
-    <button id="init-btn" onclick="launchGhostMode()">Initialize Stealth Tab</button>
+    <div id="star-container"></div>
 
     <script>
-        // Automatic launch attempt
-        window.onload = () => {
-            setTimeout(launchGhostMode, 1000);
-        };
+        // Star generation for the quick loader
+        for (let i = 0; i < 30; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            let size = Math.random() * 2 + 'px';
+            star.style.width = star.style.height = size;
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.animationDuration = Math.random() * 2 + 1 + 's';
+            document.getElementById('star-container').appendChild(star);
+        }
 
-        function launchGhostMode() {
-            // Create the about:blank window
-            // Browser history typically ignores what happens inside an about:blank iframe
-            const ghostTab = window.open('about:blank', '_blank');
+        // AUTO-DEPLOY LOGIC
+        window.onload = function() {
+            const win = window.open('about:blank', '_blank');
             
-            if (!ghostTab) {
-                document.getElementById('status').innerText = "Neural Link Blocked - Interaction Required";
-                document.getElementById('init-btn').style.display = "block";
+            // If pop-ups are blocked, we wait for a click anywhere to launch
+            if (!win) {
+                window.onclick = () => { deploy(); };
                 return;
             }
+            deploy(win);
+        };
 
-            const ghostContent = `
+        function deploy(win = null) {
+            const targetWin = win || window.open('about:blank', '_blank');
+            
+            const galaxyHTML = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Google Docs</title>
                     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
                     <style>
-                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
-                        #proxy-container { width: 100%; height: 100%; border: none; }
-                        
-                        /* The Dashboard */
-                        #dash { 
-                            position: fixed; inset: 0; display: flex; flex-direction: column; 
-                            align-items: center; justify-content: center; 
-                            background: #05010a; color: #bc13fe; font-family: sans-serif;
-                            z-index: 10;
-                        }
-                        h1 { letter-spacing: 8px; font-size: 3rem; margin: 0; }
-                        input { 
-                            margin-top: 30px; padding: 15px 25px; width: 400px; 
-                            border-radius: 50px; border: 1px solid #bc13fe; 
-                            background: rgba(255,255,255,0.05); color: white; 
-                            text-align: center; outline: none;
-                        }
+                        body { margin:0; padding:0; background:#05010a; color:white; font-family:sans-serif; overflow:hidden; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+                        h1 { font-size:3.5rem; letter-spacing:12px; color:#bc13fe; text-shadow:0 0 20px #bc13fe; margin-bottom:30px; font-weight:900; }
+                        input { padding:18px 35px; width:500px; border-radius:50px; border:1px solid rgba(188, 19, 254, 0.4); background:rgba(0,0,0,0.8); color:white; outline:none; text-align:center; font-size:1.1rem; transition: 0.3s; }
+                        input:focus { border-color:#bc13fe; box-shadow:0 0 30px rgba(188, 19, 254, 0.4); }
+                        iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; z-index:1000; }
+                        .s { position:absolute; background:white; border-radius:50%; opacity:0.6; animation: f linear infinite; }
+                        @keyframes f { from{transform:translateY(-10vh)} to{transform:translateY(110vh)} }
                     </style>
                 </head>
                 <body>
+                    <div id="stars"></div>
                     <div id="dash">
                         <h1>GALAXY PRO</h1>
-                        <input type="text" id="url-in" placeholder="Enter URL to browse anonymously..." autofocus>
-                        <p style="color: #444; font-size: 0.7rem; margin-top: 20px;">HISTORY BYPASS: ACTIVE</p>
+                        <input type="text" id="in" placeholder="Enter URL or Search Query..." autofocus>
                     </div>
-                    <iframe id="proxy-container" src="" style="display:none;"></iframe>
-
+                    <iframe id="frame"></iframe>
                     <script>
-                        const input = document.getElementById('url-in');
-                        const frame = document.getElementById('proxy-container');
-                        const dash = document.getElementById('dash');
-
-                        function loadSite(target) {
-                            // Change tab identity to educational decoy to hide from tab-viewers
-                            document.title = "Google Classroom";
-                            const link = document.querySelector("link[rel*='icon']");
-                            link.href = "https://ssl.gstatic.com/classroom/favicon.png";
-
-                            let finalUrl = target.includes('.') ? 
-                                (target.startsWith('http') ? target : 'https://' + target) : 
-                                'https://www.bing.com/search?q=' + encodeURIComponent(target);
-
-                            // Using location.replace inside the frame prevents the iframe's 
-                            // specific navigation from being added to the main browser history
-                            frame.contentWindow.location.replace(finalUrl);
-                            
-                            dash.style.display = 'none';
-                            frame.style.display = 'block';
+                        // Stars for the dashboard
+                        for(let i=0;i<60;i++){
+                            let s=document.createElement('div'); s.className='s';
+                            let z=Math.random()*3+'px'; s.style.width=s.style.height=z;
+                            s.style.left=Math.random()*100+'vw';
+                            s.style.animationDuration=Math.random()*3+2+'s';
+                            document.getElementById('stars').appendChild(s);
                         }
 
+                        const input = document.getElementById('in');
+                        const frame = document.getElementById('frame');
+                        
                         input.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter' && input.value.trim()) {
-                                loadSite(input.value.trim());
+                            if(e.key === 'Enter' && input.value) {
+                                let v = input.value;
+                                let url = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
+                                
+                                // Set Decoy Identity upon navigation
+                                document.title = "Google Classroom";
+                                document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
+                                
+                                frame.style.display = 'block';
+                                document.getElementById('dash').style.display = 'none';
+                                frame.contentWindow.location.replace(url);
                             }
                         });
                     <\/script>
@@ -108,12 +102,11 @@
                 </html>
             `;
 
-            ghostTab.document.open();
-            ghostTab.document.write(ghostContent);
-            ghostTab.document.close();
+            targetWin.document.open();
+            targetWin.document.write(galaxyHTML);
+            targetWin.document.close();
 
-            // Immediately redirect this "opener" tab to a clean page
-            // This ensures "Galaxy Pro" doesn't stay in the current tab's history either
+            // Instant redirect of the original tab to Google
             window.location.replace("https://www.google.com");
         }
     </script>
