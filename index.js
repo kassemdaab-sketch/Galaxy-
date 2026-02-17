@@ -5,10 +5,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// FIX: Tells Express to look in the main folder for index.html
+// 1. FIX: Serve static files from the current folder (css, js, etc.)
 app.use(express.static(__dirname));
 
-// ENGINE: The Proxy route to bypass "Black Screen" blocks
+// 2. ENGINE: The Proxy route to bypass "Black Screen" blocks
 app.use('/service', (req, res, next) => {
     const target = req.query.url;
     if (!target) return res.status(400).send("No target URL provided.");
@@ -18,10 +18,10 @@ app.use('/service', (req, res, next) => {
         changeOrigin: true,
         followRedirects: true,
         onProxyRes: (proxyRes) => {
-            // These lines remove the security headers causing the black screen
+            // Removes the security headers that cause the black screen in iframes
             delete proxyRes.headers['x-frame-options'];
             delete proxyRes.headers['content-security-policy'];
-            delete proxyRes.headers['frame-options'];
+            delete proxyRes.headers['frame-ancestors'];
         },
         onError: (err, req, res) => {
             res.status(500).send('Proxy Error: Galaxy Uplink failed.');
@@ -29,7 +29,7 @@ app.use('/service', (req, res, next) => {
     })(req, res, next);
 });
 
-// ROUTE: Specifically serves your index.html at the root "/"
+// 3. ROUTE: Specifically serve index.html when someone visits the root "/"
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
