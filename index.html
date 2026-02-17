@@ -1,168 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Docs</title>
-    <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/@ungap/custom-elements-builtin"></script>
-    <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');
 
-    <style>
-        :root {
-            --bg: #05010a;
-            --acc: #a855f7;
-            --acc-glow: rgba(168, 85, 247, 0.4);
-            --panel: rgba(20, 10, 35, 0.8);
-            --border: rgba(168, 85, 247, 0.2);
-        }
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background: var(--bg); color: #fff;
-            font-family: 'Outfit', sans-serif; overflow: hidden;
-        }
+// This serves your HTML files
+app.use(express.static(path.join(__dirname, 'public')));
 
-        #star-field { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, #130626 0%, #05010a 100%); }
-        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.5; }
+// The Bypass Engine: Strips security headers so sites work in the frame
+app.use('/proxy', createProxyMiddleware({
+    target: 'http://localhost:3000', // Placeholder
+    router: (req) => req.url.split('/proxy/')[1],
+    changeOrigin: true,
+    pathRewrite: (path, req) => '',
+    onProxyRes: function (proxyRes) {
+        // This is the "Bypass" part: it deletes the blocks
+        delete proxyRes.headers['x-frame-options'];
+        delete proxyRes.headers['content-security-policy'];
+    }
+}));
 
-        /* HEADER (Frogie Style) */
-        header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 15px 40px; background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid var(--border);
-        }
-        .server-status { display: flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: 0.7rem; color: #00ffaa; }
-        .dot { width: 8px; height: 8px; background: #00ffaa; border-radius: 50%; box-shadow: 0 0 10px #00ffaa; }
-
-        /* MAIN UI */
-        #main-container {
-            display: flex; flex-direction: column; align-items: center;
-            padding-top: 10vh; height: 100vh;
-        }
-
-        .logo-text {
-            font-family: 'Orbitron'; font-size: 4rem; font-weight: 900;
-            letter-spacing: 12px; margin-bottom: 5px;
-            background: linear-gradient(to bottom, #fff, var(--acc));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .search-area { width: 100%; max-width: 650px; margin-top: 40px; }
-        #search-input {
-            width: 100%; padding: 20px 30px; border-radius: 12px;
-            background: var(--panel); border: 1px solid var(--border);
-            color: white; font-family: 'JetBrains Mono'; font-size: 1rem;
-            outline: none; backdrop-filter: blur(10px);
-        }
-        #search-input:focus { border-color: var(--acc); box-shadow: 0 0 20px var(--acc-glow); }
-
-        /* APP GRID */
-        .app-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 20px; margin-top: 50px; width: 100%; max-width: 800px;
-        }
-        .app-card {
-            background: var(--panel); border: 1px solid var(--border);
-            padding: 20px; border-radius: 15px; text-align: center;
-            cursor: pointer; transition: 0.3s;
-        }
-        .app-card:hover {
-            transform: translateY(-5px); border-color: var(--acc);
-            background: var(--acc); color: white;
-        }
-        .app-card i { display: block; font-size: 1.5rem; margin-bottom: 10px; font-family: 'Orbitron'; font-style: normal; }
-
-        /* PROXY OVERLAY */
-        #proxy-view {
-            position: fixed; inset: 0; background: #000;
-            z-index: 2000; display: none; flex-direction: column;
-        }
-        #nav-bar {
-            height: 60px; background: #0a0515; border-bottom: 2px solid var(--acc);
-            display: flex; align-items: center; padding: 0 20px; gap: 15px;
-        }
-        .nav-btn {
-            background: var(--panel); border: 1px solid var(--border);
-            color: var(--acc); padding: 8px 15px; border-radius: 5px;
-            font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer;
-        }
-        iframe { flex-grow: 1; border: none; background: white; }
-    </style>
-</head>
-<body>
-
-    <div id="star-field"></div>
-
-    <div id="proxy-view">
-        <div id="nav-bar">
-            <button class="nav-btn" onclick="closeProxy()">BACK</button>
-            <div style="flex-grow: 1; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: #888; text-align: center;">SECURE_UPLINK::ENCRYPTED</div>
-            <button class="nav-btn" style="color: #ff4444;" onclick="closeProxy()">CLOSE</button>
-        </div>
-        <iframe is="x-frame-bypass" id="proxy-frame"></iframe>
-    </div>
-
-    <header>
-        <div style="font-family: 'Orbitron'; font-size: 0.8rem; letter-spacing: 2px;">GALAXY_OS</div>
-        <div class="server-status"><div class="dot"></div> SERVER: ONLINE</div>
-    </header>
-
-    <div id="main-container">
-        <div class="logo-text">GALAXY</div>
-        <div style="color: var(--acc); font-family: 'Orbitron'; letter-spacing: 5px; font-size: 0.8rem;">ARCADE & PROXY</div>
-
-        <div class="search-area">
-            <form id="proxy-form">
-                <input type="text" id="search-input" placeholder="Enter URL or Search Query..." autocomplete="off">
-            </form>
-        </div>
-
-        <div class="app-grid">
-            <div class="app-card" onclick="openProxy('https://duckduckgo.com')"><i>🔍</i>Search</div>
-            <div class="app-card" onclick="openProxy('https://poki.com')"><i>🎮</i>Poki</div>
-            <div class="app-card" onclick="openProxy('https://youtube.com')"><i>📺</i>YouTube</div>
-            <div class="app-card" onclick="openProxy('https://discord.com')"><i>💬</i>Discord</div>
-        </div>
-    </div>
-
-    <script>
-        function openProxy(url) {
-            document.getElementById('proxy-view').style.display = 'flex';
-            document.getElementById('proxy-frame').src = url;
-        }
-
-        function closeProxy() {
-            document.getElementById('proxy-view').style.display = 'none';
-            document.getElementById('proxy-frame').src = '';
-        }
-
-        document.getElementById('proxy-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const val = document.getElementById('search-input').value.trim();
-            if(!val) return;
-            
-            let url;
-            if(val.includes('.') && !val.includes(' ')) {
-                url = val.startsWith('http') ? val : 'https://' + val;
-            } else {
-                url = 'https://duckduckgo.com/?q=' + encodeURIComponent(val);
-            }
-            openProxy(url);
-        });
-
-        // Background
-        const field = document.getElementById('star-field');
-        for(let i=0; i<100; i++) {
-            const s = document.createElement('div');
-            s.className = 'star';
-            s.style.width = s.style.height = Math.random()*3+'px';
-            s.style.left = Math.random()*100+'vw';
-            s.style.top = Math.random()*100+'vh';
-            field.appendChild(s);
-        }
-    </script>
-</body>
-</html>
+app.listen(PORT, () => console.log(`Galaxy Engine spinning on ${PORT}`));
