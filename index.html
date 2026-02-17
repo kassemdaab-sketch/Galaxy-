@@ -1,50 +1,33 @@
-const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const path = require('path');
+import express from 'express';
+import { createServer } from 'node:http';
+import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
+import { createBareServer } from '@tomphttp/bare-server-node';
+import path from 'node:path';
 
+const __dirname = path.resolve();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const bare = createBareServer('/bare/');
+const server = createServer();
 
-// Serves your Galaxy HTML files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uv/', express.static(uvPath));
 
-app.use('/proxy', createProxyMiddleware({
-    target: 'http://localhost:3000', 
-    router: (req) => {
-        // Extracts the URL after /proxy/
-        const url = req.url.split('/proxy/')[1];
-        return url.startsWith('http') ? url : 'https://' + url;
-    },
-    changeOrigin: true,
-    pathRewrite: (path, req) => '',
-    onProxyRes: function (proxyRes) {
-        // Deletes the security locks so the site shows up in your Galaxy frame
-        delete proxyRes.headers['x-frame-options'];
-        delete proxyRes.headers['content-security-policy'];
-        delete proxyRes.headers['cross-origin-resource-policy'];
-    },
-    // Adding this helps with sites like Roblox that have strict cookie/origin rules
-    onProxyReq: (proxyReq, req, res) => {
-        proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36');
-    }
-}));
-
-app.listen(PORT, () => console.log(`Galaxy Engine spinning on ${PORT}`));
-function launchProxy(val) {
-    if(!val) return;
-    const frame = document.getElementById('proxy-frame');
-    const viewport = document.getElementById('proxy-layer');
-    
-    let targetUrl = val.trim();
-    
-    // If it's not a link, search DuckDuckGo
-    if(!targetUrl.includes('.') || targetUrl.includes(' ')) {
-        targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(targetUrl);
+server.on('request', (req, res) => {
+    if (bare.shouldRoute(req)) {
+        bare.routeRequest(req, res);
     } else {
-        if(!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
+        app(req, res);
     }
+});
 
-    // Sends the request through your Node.js "Bypass" route
-    frame.src = window.location.origin + '/proxy/' + targetUrl;
-    viewport.style.display = 'flex';
-}
+server.on('upgrade', (req, socket, head) => {
+    if (bare.shouldRoute(req)) {
+        bare.routeUpgrade(req, socket, head);
+    } else {
+        socket.end();
+    }
+});
+
+server.listen({ port: process.env.PORT || 3000 }, () => {
+    console.log('Galaxy Station Active');
+});
