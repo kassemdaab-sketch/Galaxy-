@@ -37,17 +37,6 @@
         }
         #search-input:focus { width: 550px; box-shadow: 0 0 30px var(--accent); }
 
-        /* Pop-up Bypass Overlay */
-        #launch-overlay {
-            display: none; position: fixed; inset: 0; z-index: 10000;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            align-items: center; justify-content: center;
-        }
-        .launch-card {
-            background: #0a0214; border: 1px solid var(--accent);
-            padding: 40px; text-align: center; border-radius: 10px;
-        }
-
         #drawer {
             position: fixed; right: -300px; top: 0; bottom: 0; width: 280px;
             background: var(--glass); border-left: 1px solid var(--accent);
@@ -67,9 +56,9 @@
         }
 
         button {
-            padding: 12px 25px; margin-top: 15px;
+            width: 100%; padding: 10px; margin-top: 10px;
             background: transparent; border: 1px solid var(--accent);
-            color: #fff; cursor: pointer; font-family: 'Orbitron';
+            color: #fff; cursor: pointer; transition: 0.2s;
         }
         button:hover { background: var(--accent); }
     </style>
@@ -77,14 +66,6 @@
 <body>
 
 <canvas id="stars-canvas"></canvas>
-
-<div id="launch-overlay">
-    <div class="launch-card">
-        <h2 style="font-family: 'Orbitron'; color: var(--accent);">CONNECTION READY</h2>
-        <p>Click to initialize about:blank stealth tab.</p>
-        <button id="confirm-launch">INITIALIZE UPLINK</button>
-    </div>
-</div>
 
 <div class="main-ui">
     <h1>GALAXY PRO</h1>
@@ -102,7 +83,7 @@
         <option value="classroom">Google Classroom</option>
         <option value="canvas">Canvas</option>
     </select>
-    <button onclick="localStorage.clear(); location.reload();" style="color: red; border-color: red; width: 100%;">WIPE SYSTEM</button>
+    <button onclick="localStorage.clear(); location.reload();" style="color: red; border-color: red;">WIPE SYSTEM</button>
 </div>
 
 <div class="log-box" id="logs"></div>
@@ -110,8 +91,6 @@
 <script>
     const input = document.getElementById('search-input');
     const logs = document.getElementById('logs');
-    const overlay = document.getElementById('launch-overlay');
-    let pendingUrl = "";
 
     function addLog(msg) {
         const div = document.createElement('div');
@@ -131,13 +110,13 @@
                 if (!val.startsWith('http')) url = 'https://' + val;
             }
             
-            pendingUrl = url;
-            overlay.style.display = 'flex'; // Show the bypass card
-            addLog("AWAITING USER INITIALIZATION...");
+            launchInTab(url);
         }
     });
 
-    document.getElementById('confirm-launch').onclick = () => {
+    function launchInTab(target) {
+        addLog("REWRITING DOCUMENT...");
+        
         const cloak = document.getElementById('cloak-select').value;
         const identities = {
             docs: ["Google Docs", "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico"],
@@ -146,44 +125,39 @@
         };
         const [title, icon] = identities[cloak];
 
-        const newWin = window.open('about:blank', '_blank');
-        if (newWin) {
-            const doc = newWin.document;
-            
-            // Set Tab Appearance
-            doc.title = title;
-            const link = doc.createElement('link');
-            link.rel = 'icon';
-            link.href = icon;
-            doc.head.appendChild(link);
-
-            // Inject the Proxy Iframe
-            const iframe = doc.createElement('iframe');
-            iframe.src = pendingUrl;
-            iframe.style = "position:fixed; inset:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden;";
-            
-            doc.body.style.margin = "0";
-            doc.body.appendChild(iframe);
-
-            // Add Panic key to the NEW tab
-            newWin.addEventListener('keydown', (e) => {
-                if (e.key === '`') newWin.location.href = 'https://classroom.google.com';
-            });
-
-            overlay.style.display = 'none';
-            input.value = "";
-            addLog("STEALTH UPLINK ACTIVE.");
-        } else {
-            alert("Pop-up blocked! Please click the icon in your address bar to 'Always allow pop-ups'.");
-        }
-    };
+        // Replace current page content with a full-screen iframe
+        document.open();
+        document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${title}</title>
+                <link rel="icon" href="${icon}">
+                <style>
+                    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                    iframe { width: 100%; height: 100%; border: none; margin: 0; padding: 0; }
+                </style>
+            </head>
+            <body>
+                <iframe src="${target}"></iframe>
+                <script>
+                    window.onbeforeunload = function() { return "System active."; };
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === '\`') window.location.replace('https://classroom.google.com');
+                    });
+                <\/script>
+            </body>
+            </html>
+        `);
+        document.close();
+    }
 
     // Visuals
     const canvas = document.getElementById('stars-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const stars = Array(150).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.2 }));
+    const stars = Array(120).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.3 }));
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#fff";
@@ -193,7 +167,7 @@
     draw();
 
     window.addEventListener('keydown', (e) => {
-        if (e.key === '`') window.location.href = 'https://classroom.google.com';
+        if (e.key === '`') window.location.replace('https://classroom.google.com');
     });
 </script>
 </body>
