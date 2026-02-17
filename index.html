@@ -1,137 +1,317 @@
-<script>
-        let currentTail = 'rainbow', hue = 0, timerInterval, isCloaked = false;
-        let starDensity = 70, starVelocity = 1.0, tailParticleDensity = 1;
-        let starObjects = [];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="tab-title">Google Docs</title>
+    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-main: #05010a; 
+            --accent-hue: 280;
+            --accent: hsl(var(--accent-hue), 100%, 53%); 
+            --accent-glow: hsla(var(--accent-hue), 100%, 53%, 0.5);
+            --glass: rgba(10, 2, 20, 0.85); 
+            --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
+            --safe-green: #00ff99;
+            --warning-orange: #ff9500;
+        }
 
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-main);
+            color: #fff; overflow: hidden; height: 100vh;
+            transition: opacity 0.5s ease, filter 0.5s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle 150px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsla(var(--accent-hue), 100%, 50%, 0.15), transparent 80%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        body.ghost-active {
+            opacity: 0.4;
+            filter: grayscale(0.8) contrast(1.2);
+            pointer-events: all;
+        }
+
+        #bg-layer { 
+            position: fixed; inset: 0; z-index: -1; 
+            background-size: cover !important; 
+            background-position: center !important; 
+            background-repeat: no-repeat !important;
+            transition: filter 0.3s ease; 
+        }
+
+        .engine-overload { filter: contrast(1.2) brightness(1.1); }
+        .engine-overload h1, .engine-overload .nav-btn {
+            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff !important;
+            animation: glitch 0.2s infinite alternate;
+        }
+
+        .card:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            transition: 0.3s;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            100% { transform: translate(1px, -1px); }
+        }
+
+        #scanlines {
+            position: fixed; inset: 0; 
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+            background-size: 100% 3px; z-index: 5000; pointer-events: none; opacity: 0; transition: 0.3s;
+        }
+        .scanlines-on #scanlines { opacity: 1; }
+
+        @keyframes rainbowFull {
+            0% { border-color: #ff0000; color: #ff0000; box-shadow: 0 0 15px #ff0000; }
+            33% { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 15px #00ff00; }
+            66% { border-color: #00ffff; color: #00ffff; box-shadow: 0 0 15px #00ffff; }
+            100% { border-color: #ff0000; color: #ff0000; box-shadow: 0 0 15px #ff0000; }
+        }
+        .rainbow-active .nav-btn, .rainbow-active .card, .rainbow-active h1, 
+        .rainbow-active #search-box, .rainbow-active .header-pill { 
+            animation: rainbowFull 4s infinite linear !important; 
+        }
+
+        #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
+        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; display: flex; align-items: center; gap: 8px; cursor: default; }
+        
+        #system-logs {
+            position: fixed; bottom: 20px; left: 20px; width: 260px; height: 130px;
+            background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 4px;
+            font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--safe-green);
+            padding: 10px; overflow: hidden; pointer-events: none; z-index: 500;
+        }
+
+        #widget-drawer { 
+            position: fixed; right: -320px; top: 80px; bottom: 80px; width: 300px; 
+            background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border); 
+            border-radius: 20px 0 0 20px; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
+            z-index: 9999; padding: 25px; box-sizing: border-box; 
+        }
+        #widget-drawer.open { right: 0; }
+        #drawer-tab { 
+            position: absolute; left: -40px; top: 50%; transform: translateY(-50%); 
+            background: var(--accent); color: white; width: 40px; height: 120px; 
+            border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; writing-mode: vertical-rl; 
+            z-index: 10000; box-shadow: -5px 0 15px var(--accent-glow);
+        }
+
+        #main-content { display: none; text-align: center; padding-top: 60px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; transition: transform 0.2s ease-out; }
+        h1 { font-family: 'Orbitron'; font-size: 4.5rem; font-weight: 900; margin: 20px 0; letter-spacing: 12px; transition: 0.3s; }
+        h1:hover { letter-spacing: 20px; color: var(--accent); text-shadow: 0 0 30px var(--accent); }
+
+        #search-box { width: 450px; padding: 15px 25px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 4px; color: white; font-family: 'JetBrains Mono'; outline: none; transition: 0.3s; }
+        #search-box:focus { width: 500px; border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+
+        .nav-btn { display: inline-block; margin: 10px; padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.75rem; letter-spacing: 2px; transition: 0.3s; position: relative; overflow: hidden; }
+        .nav-btn:hover { background: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.05); }
+
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 40px auto; padding: 0 20px 100px 20px; }
+        .card { background: var(--glass); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: left; position: relative; }
+        
+        .action-btn { width: 100%; padding: 10px; margin-top: 8px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.65rem; transition: 0.2s; text-align: center; }
+        .action-btn:hover { background: var(--accent); color: white; transform: translateX(5px); }
+
+        #stealth-overlay { position: fixed; inset: 0; background: #f0f2f5; color: #1c1e21; z-index: 100000; display: none; padding: 40px; font-family: sans-serif; text-align: left; }
+        #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
+        .star { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; }
+        .particle { position: fixed; pointer-events: none; z-index: 9998; border-radius: 50%; transition: transform 0.8s ease-out, opacity 0.8s ease-out; }
+    </style>
+</head>
+<body onmousemove="handleMouseMove(event)">
+    <div id="bg-layer"></div>
+    <div id="scanlines"></div>
+    <div id="system-logs"></div>
+    <div id="stars-canvas"></div>
+
+    <div id="stealth-overlay" onclick="toggleStealth()">
+        <div style="max-width: 800px; margin: auto;">
+            <h2 style="color: #1877f2;">Google Workspace</h2>
+            <p>Searching My Drive...</p>
+            <hr>
+            <div style="height: 150px; background: #eee; border-radius: 8px;"></div>
+        </div>
+    </div>
+
+    <div id="neural-header">
+        <div style="display: flex; gap: 10px;">
+            <div class="header-pill" id="neural-clock">00:00:00</div>
+            <div class="header-pill" id="weather-display" style="color:var(--safe-green)">ATMOS: SYNCING...</div>
+            <div class="header-pill">VEL: <span id="speed-val">0</span></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="header-pill" id="timer-display" style="display:none; color:var(--warning-orange)">T-MINUS: 00:00</div>
+            <div class="header-pill" id="pilot-id">PILOT: UNKNOWN</div>
+        </div>
+    </div>
+
+    <div id="widget-drawer">
+        <div id="drawer-tab" onclick="toggleDrawer()">ENGINE CONTROL</div>
+        <select id="cloak-selector" onchange="applyCloak(this.value)" style="width: 100%; background: black; color: white; border: 1px solid var(--border); margin-bottom: 10px; padding: 5px;">
+            <option value="docs">Google Docs</option>
+            <option value="drive">Google Drive</option>
+            <option value="classroom">Google Classroom</option>
+            <option value="none">Default</option>
+        </select>
+        <select id="engine-selector" style="width: 100%; background: black; color: var(--accent); border: 1px solid var(--border); padding: 5px; margin-bottom: 15px;">
+            <option value="https://www.google.com/search?q=">GOOGLE</option>
+            <option value="https://duckduckgo.com/?q=">DUCKDUCKGO</option>
+            <option value="https://www.bing.com/search?q=">BING</option>
+        </select>
+        <label style="font-size: 0.6rem;">NEURAL HUE:</label>
+        <input type="range" id="hue-slider" min="0" max="360" value="280" oninput="updateHue(this.value)" style="width:100%;">
+        <button class="action-btn" onclick="toggleRainbow()">TOGGLE RGB SYNC</button>
+        <button class="action-btn" onclick="toggleScanlines()">TOGGLE SCANLINES</button>
+        <button class="action-btn" onclick="toggleEngine()">TOGGLE GLITCH ENGINE</button>
+        <button class="action-btn" onclick="toggleGhostMode()">TOGGLE GHOST ENGINE</button>
+        <textarea id="note-pad" placeholder="// System Notes..." style="width:100%; height:80px; background:black; border:1px solid var(--border); color:var(--safe-green); margin-top:10px;"></textarea>
+    </div>
+
+    <div id="auth-overlay" style="position:fixed; inset:0; background:#05010a; display:flex; justify-content:center; align-items:center; z-index:10000;">
+        <div class="card" style="width:320px; text-align:center;">
+            <h2 style="font-family:'Orbitron';">GALAXY CORE</h2>
+            <input type="text" id="user-in" placeholder="CALLSIGN" style="width:80%; padding:12px; margin:20px 0; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--border); text-align:center;">
+            <button onclick="login()" class="action-btn" style="background:var(--accent); color:white;">BOOT SEQUENCE</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div id="search-container">
+            <input type="text" id="search-box" placeholder="LINK TO GLOBAL DATABASE..." onkeydown="if(event.key==='Enter') executeBypassSearch()">
+        </div>
+        
+        <h1 id="glitch-title">GALAXY PRO</h1>
+        <div>
+            <a href="https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games" target="_blank" class="nav-btn">GAMES</a>
+            <a href="https://sflix.ps/" target="_blank" class="nav-btn">MOVIES</a>
+            <a href="https://sites.google.com/fcpsschools.net/math-7-honors-courses/math-7-honors-courses" target="_blank" class="nav-btn">PROXIES</a>
+        </div>
+
+        <div class="settings-grid">
+            <div class="card">
+                <label style="color:var(--accent); font-size:0.6rem;">MISSION TIMER</label>
+                <input type="number" id="timer-input" placeholder="MINS" style="width:90%; background:black; color:white; border:1px solid var(--border); margin: 8px 0;">
+                <button class="action-btn" onclick="startTimer()">START COUNTDOWN</button>
+            </div>
+            <div class="card">
+                <label style="color:var(--accent); font-size:0.6rem;">INJECTION HUB</label>
+                <input type="file" id="bg-up" style="display:none" onchange="applyBG(this)">
+                <button class="action-btn" onclick="document.getElementById('bg-up').click()">UPLOAD BG</button>
+                <button class="action-btn" onclick="logout()">LOGOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTail = 'rainbow', timerInterval, isCloaked = false;
+        let starDensity = 70;
+
+        // SEARCH BYPASS LOGIC
+        function executeBypassSearch() {
+            const query = document.getElementById('search-box').value;
+            const engineBase = document.getElementById('engine-selector').value;
+            if (query.trim() !== "") {
+                logMessage("UPLINKING: " + query.substring(0,10) + "...");
+                window.open(engineBase + encodeURIComponent(query), '_blank');
+            }
+        }
+
+        // TAB CLOAKING
         const cloaks = {
             docs: { title: "Google Docs", icon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
             drive: { title: "My Drive - Google Drive", icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" },
             classroom: { title: "Classes", icon: "https://ssl.gstatic.com/classroom/favicon.png" },
-            sheets: { title: "Google Sheets", icon: "https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico" },
-            slides: { title: "Google Slides", icon: "https://ssl.gstatic.com/docs/presentations/images/favicon5.ico" },
-            gmail: { title: "Gmail", icon: "https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico" },
-            canvas: { title: "Dashboard", icon: "https://du11bjcvkw674.cloudfront.net/favicon.ico" },
-            teams: { title: "Microsoft Teams", icon: "https://statics.teams.cdn.office.net/evergreen-assets/apps/teams_app_icon_v2.ico" },
-            zoom: { title: "Zoom", icon: "https://st1.zoom.us/zoom.ico" },
-            wikipedia: { title: "Wikipedia", icon: "https://en.wikipedia.org/static/favicon/wikipedia.ico" },
-            youtube: { title: "YouTube", icon: "https://www.youtube.com/s/desktop/28e029f1/img/favicon_32x32.png" },
-            outlook: { title: "Outlook", icon: "https://res.cdn.office.net/owamail/20231020005.01/resources/images/favicon.ico" },
             none: { title: "GALAXY PRO", icon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" }
         };
 
-        // --- KEYBIND COMMANDS ---
-        window.addEventListener('keydown', (e) => {
-            if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); window.open(document.getElementById('btn-proxies').href, '_blank'); }
-            if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); window.open(document.getElementById('btn-movies').href, '_blank'); }
-            if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); window.open(document.getElementById('btn-games').href, '_blank'); }
-            if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); toggleScanlines(); saveSettings(); }
-            if (e.ctrlKey && e.key.toLowerCase() === 'r') { e.preventDefault(); toggleRainbow(); saveSettings(); }
-            if (e.ctrlKey && e.key.toLowerCase() === 'e') { e.preventDefault(); toggleEngine(); saveSettings(); }
-            if (e.key === '`') { e.preventDefault(); window.location.href = document.getElementById('panic-url').value || "https://classroom.google.com"; }
-            if (e.key === 'Escape') { e.preventDefault(); toggleStealth(); }
-            if (e.ctrlKey && e.key.toLowerCase() === 'b') { 
-                if(confirm("WIPE SYSTEM?")) { localStorage.clear(); location.reload(); }
-            }
-        });
-
-        // --- CORE ENGINES ---
-        function setStars() {
-            const container = document.getElementById('stars-canvas');
-            container.innerHTML = ''; starObjects = [];
-            for(let i=0; i<starDensity; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                let size = Math.random()*2+1;
-                starObjects.push({ el: s, x: Math.random()*100, y: Math.random()*100, speed: size * 0.05 });
-                s.style.width = size+'px'; s.style.height = size+'px';
-                container.appendChild(s);
-            }
+        function applyCloak(type) {
+            const data = cloaks[type] || cloaks.none;
+            document.getElementById('favicon').href = data.icon;
+            document.title = data.title;
         }
 
-        function animateStars() {
-            starObjects.forEach(s => {
-                s.y += s.speed * starVelocity;
-                if(s.y > 105) s.y = -5;
-                s.el.style.left = s.x + '%';
-                s.el.style.top = s.y + '%';
-            });
-            requestAnimationFrame(animateStars);
-        }
-
-        function createTail(e) {
-            if(currentTail === 'void') return;
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = e.clientX + 'px';
-            p.style.top = e.clientY + 'px';
-            const size = Math.random() * 8 + 2;
-            p.style.width = size + 'px'; p.style.height = size + 'px';
-            
-            // Tail Styles
-            if(currentTail === 'rainbow') p.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
-            else if(currentTail === 'neon') p.style.background = 'var(--accent)';
-            else if(currentTail === 'spark') p.style.background = '#fff';
-            else if(currentTail === 'shock') { p.style.background = '#00ffff'; p.style.borderRadius = '0'; }
-            else if(currentTail === 'ghost') { p.style.background = 'rgba(255,255,255,0.2)'; p.style.filter = 'blur(4px)'; }
-
-            document.body.appendChild(p);
-            setTimeout(() => {
-                p.style.transform = `translate(${(Math.random()-0.5)*50}px, ${Math.random()*50}px) scale(0)`;
-                p.style.opacity = '0';
-                setTimeout(() => p.remove(), 800);
-            }, 10);
-        }
-
-        // --- UI & STATE ---
+        // UI & EFFECTS
         function handleMouseMove(e) {
             document.body.style.setProperty('--mouse-x', e.clientX + 'px');
             document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-            for (let i = 0; i < tailParticleDensity; i++) createTail(e);
         }
 
-        function loadSession() {
-            const user = localStorage.getItem('galaxy_user');
-            if (!user) {
-                document.getElementById('auth-overlay').style.display = 'flex';
-                return;
-            }
+        function updateHue(val) { document.documentElement.style.setProperty('--accent-hue', val); }
+        function toggleEngine() { document.body.classList.toggle('engine-overload'); }
+        function toggleRainbow() { document.body.classList.toggle('rainbow-active'); }
+        function toggleScanlines() { document.body.classList.toggle('scanlines-on'); }
+        function toggleGhostMode() { document.body.classList.toggle('ghost-active'); }
+        function toggleDrawer() { document.getElementById('widget-drawer').classList.toggle('open'); }
+        function toggleStealth() { 
+            const s = document.getElementById('stealth-overlay');
+            s.style.display = (s.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function login() {
+            const user = document.getElementById('user-in').value || "PILOT";
+            document.getElementById('pilot-id').innerText = "PILOT: " + user.toUpperCase();
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            document.getElementById('pilot-id').innerText = "PILOT: " + user.toUpperCase();
-            
-            const saved = JSON.parse(localStorage.getItem('galaxy_settings_pro'));
-            if(saved) {
-                if(saved.rainbow) toggleRainbow();
-                if(saved.scanlines) toggleScanlines();
-                if(saved.glitch) toggleEngine();
-                updateHue(saved.hue || 280);
-                setTail(saved.tail || 'rainbow');
-                updateDensity(saved.density || 70);
-                updateVelocity(saved.velocity || 1.0);
-            }
-            setStars(); animateStars();
-            setInterval(() => {
-                document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
-            }, 1000);
+            setStars();
+            updateClock();
+            setInterval(updateClock, 1000);
         }
 
-        function setTail(type) { currentTail = type; logMessage("SYSTEM: TAIL_" + type.toUpperCase()); }
-        function login() { 
-            const name = document.getElementById('user-in').value || "PILOT";
-            localStorage.setItem('galaxy_user', name); 
-            location.reload(); 
-        }
-        function logout() { localStorage.removeItem('galaxy_user'); location.reload(); }
+        function logout() { location.reload(); }
+
         function logMessage(msg) {
             const lb = document.getElementById('system-logs');
             const div = document.createElement('div');
             div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
             lb.prepend(div);
-            if(lb.childNodes.length > 6) lb.lastChild.remove();
         }
 
-        // Initialize
-        window.onload = loadSession;
+        function updateClock() {
+            document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
+        }
+
+        function startTimer() {
+            let mins = document.getElementById('timer-input').value;
+            let target = new Date().getTime() + mins * 60000;
+            document.getElementById('timer-display').style.display = 'flex';
+            timerInterval = setInterval(() => {
+                let diff = target - new Date().getTime();
+                if(diff <= 0) { clearInterval(timerInterval); alert("TIME EXPIRED"); return; }
+                let m = Math.floor(diff/60000), s = Math.floor((diff%60000)/1000);
+                document.getElementById('timer-display').innerText = `T-MINUS: ${m}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        function setStars() {
+            const container = document.getElementById('stars-canvas');
+            for(let i=0; i<starDensity; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                s.style.width = s.style.height = (Math.random()*3) + 'px';
+                s.style.left = Math.random()*100 + '%';
+                s.style.top = Math.random()*100 + '%';
+                container.appendChild(s);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleStealth();
+        });
     </script>
 </body>
 </html>
