@@ -11,105 +11,96 @@
             display: flex; flex-direction: column; align-items: center; 
             justify-content: center; height: 100vh; margin: 0; 
         }
-        .loading-text { letter-spacing: 3px; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        button { 
-            display: none; padding: 15px 30px; background: #bc13fe; 
-            color: white; border: none; cursor: pointer; font-weight: bold; 
+        .status { letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem; }
+        #init-btn { 
+            margin-top: 20px; padding: 12px 25px; background: #bc13fe; 
+            color: white; border: none; cursor: pointer; font-weight: bold;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-    <h2 id="status" class="loading-text">DEPLOYING STEALTH INTERFACE...</h2>
-    <button id="retry" onclick="startCloak()">RE-INITIALIZE GALAXY</button>
+    <div id="status" class="status">Verifying Neural Link...</div>
+    <button id="init-btn" onclick="launchGhostMode()">Initialize Stealth Tab</button>
 
     <script>
-        // Start the process as soon as the page loads
-        window.onload = startCloak;
+        // Automatic launch attempt
+        window.onload = () => {
+            setTimeout(launchGhostMode, 1000);
+        };
 
-        function startCloak() {
-            const win = window.open('about:blank', '_blank');
+        function launchGhostMode() {
+            // Create the about:blank window
+            // Browser history typically ignores what happens inside an about:blank iframe
+            const ghostTab = window.open('about:blank', '_blank');
             
-            if (!win) {
-                document.getElementById('status').innerText = "POP-UP BLOCKED";
-                document.getElementById('retry').style.display = "block";
+            if (!ghostTab) {
+                document.getElementById('status').innerText = "Neural Link Blocked - Interaction Required";
+                document.getElementById('init-btn').style.display = "block";
                 return;
             }
 
-            // Define the Full Galaxy Pro Interface
-            const galaxyContent = `
+            const ghostContent = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Google Docs</title>
                     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
-                    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono&display=swap" rel="stylesheet">
                     <style>
-                        body { background: #05010a; color: white; margin: 0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-                        canvas { position: fixed; top: 0; left: 0; z-index: -1; }
-                        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 12px; margin: 0; color: #bc13fe; text-shadow: 0 0 20px rgba(188, 19, 254, 0.5); }
-                        .search-container { margin-top: 40px; position: relative; }
-                        input { width: 500px; padding: 18px 25px; border-radius: 50px; border: 2px solid rgba(188, 19, 254, 0.3); background: rgba(0,0,0,0.6); color: white; font-size: 1rem; outline: none; transition: 0.3s; text-align: center; }
-                        input:focus { border-color: #bc13fe; box-shadow: 0 0 30px rgba(188, 19, 254, 0.4); }
-                        .btns { margin-top: 30px; }
-                        button { padding: 10px 25px; margin: 5px; background: transparent; border: 1px solid #bc13fe; color: white; cursor: pointer; font-family: 'Orbitron'; transition: 0.3s; }
-                        button:hover { background: #bc13fe; box-shadow: 0 0 15px #bc13fe; }
+                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+                        #proxy-container { width: 100%; height: 100%; border: none; }
+                        
+                        /* The Dashboard */
+                        #dash { 
+                            position: fixed; inset: 0; display: flex; flex-direction: column; 
+                            align-items: center; justify-content: center; 
+                            background: #05010a; color: #bc13fe; font-family: sans-serif;
+                            z-index: 10;
+                        }
+                        h1 { letter-spacing: 8px; font-size: 3rem; margin: 0; }
+                        input { 
+                            margin-top: 30px; padding: 15px 25px; width: 400px; 
+                            border-radius: 50px; border: 1px solid #bc13fe; 
+                            background: rgba(255,255,255,0.05); color: white; 
+                            text-align: center; outline: none;
+                        }
                     </style>
                 </head>
                 <body>
-                    <canvas id="s"></canvas>
-                    <h1>GALAXY PRO</h1>
-                    <div class="search-container">
-                        <input type="text" id="q" placeholder="Search or Enter URL..." autofocus>
+                    <div id="dash">
+                        <h1>GALAXY PRO</h1>
+                        <input type="text" id="url-in" placeholder="Enter URL to browse anonymously..." autofocus>
+                        <p style="color: #444; font-size: 0.7rem; margin-top: 20px;">HISTORY BYPASS: ACTIVE</p>
                     </div>
-                    <div class="btns">
-                        <button onclick="launch('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')">GAMES</button>
-                        <button onclick="launch('https://sflix.ps/')">MOVIES</button>
-                    </div>
+                    <iframe id="proxy-container" src="" style="display:none;"></iframe>
 
                     <script>
-                        // Star background logic
-                        const c = document.getElementById('s');
-                        const x = c.getContext('2d');
-                        let w = c.width = window.innerWidth;
-                        let h = c.height = window.innerHeight;
-                        const stars = Array(100).fill().map(() => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*2}));
-                        function d() {
-                            x.clearRect(0,0,w,h); x.fillStyle = "white";
-                            stars.forEach(p => { x.beginPath(); x.arc(p.x, p.y, p.r, 0, Math.PI*2); x.fill(); p.y += 0.3; if(p.y > h) p.y = 0; });
-                            requestAnimationFrame(d);
-                        }
-                        d();
+                        const input = document.getElementById('url-in');
+                        const frame = document.getElementById('proxy-container');
+                        const dash = document.getElementById('dash');
 
-                        // Launch Logic: Switches title to educational app upon search
-                        function launch(url) {
-                            const decoys = ["Google Classroom", "Canvas", "Edgenuity", "Khan Academy"];
-                            const favicons = [
-                                "https://ssl.gstatic.com/classroom/favicon.png",
-                                "https://instructure-uploads.s3.amazonaws.com/account_15800000000000001/attachments/637412/favicon.ico",
-                                "https://www.edgenuity.com/favicon.ico",
-                                "https://www.khanacademy.org/favicon.ico"
-                            ];
-                            const rand = Math.floor(Math.random() * decoys.length);
+                        function loadSite(target) {
+                            // Change tab identity to educational decoy to hide from tab-viewers
+                            document.title = "Google Classroom";
+                            const link = document.querySelector("link[rel*='icon']");
+                            link.href = "https://ssl.gstatic.com/classroom/favicon.png";
+
+                            let finalUrl = target.includes('.') ? 
+                                (target.startsWith('http') ? target : 'https://' + target) : 
+                                'https://www.bing.com/search?q=' + encodeURIComponent(target);
+
+                            // Using location.replace inside the frame prevents the iframe's 
+                            // specific navigation from being added to the main browser history
+                            frame.contentWindow.location.replace(finalUrl);
                             
-                            // Change tab identity
-                            document.title = decoys[rand];
-                            let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-                            link.type = 'image/x-icon';
-                            link.rel = 'shortcut icon';
-                            link.href = favicons[rand];
-                            document.getElementsByTagName('head')[0].appendChild(link);
-
-                            // Load Content
-                            document.body.innerHTML = '<iframe src="' + url + '" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden;"></iframe>';
+                            dash.style.display = 'none';
+                            frame.style.display = 'block';
                         }
 
-                        document.getElementById('q').addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter') {
-                                let v = e.target.value;
-                                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
-                                launch(u);
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' && input.value.trim()) {
+                                loadSite(input.value.trim());
                             }
                         });
                     <\/script>
@@ -117,12 +108,12 @@
                 </html>
             `;
 
-            // Inject the Galaxy Pro code into the about:blank window
-            win.document.open();
-            win.document.write(galaxyContent);
-            win.document.close();
+            ghostTab.document.open();
+            ghostTab.document.write(ghostContent);
+            ghostTab.document.close();
 
-            // Redirect the original tab to a safe "Google" page immediately
+            // Immediately redirect this "opener" tab to a clean page
+            // This ensures "Galaxy Pro" doesn't stay in the current tab's history either
             window.location.replace("https://www.google.com");
         }
     </script>
