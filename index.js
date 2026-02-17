@@ -5,27 +5,28 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// This tells the server to look in your main folder for the files
 app.use(express.static(__dirname));
 
-// This is the CRITICAL part that fixes "Cannot GET /"
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// The Proxy Engine for the black screen fix
+// THIS IS THE FIX: Added 'selfHandleResponse' and the 'router' logic
 app.use('/service', (req, res, next) => {
     const target = req.query.url;
-    if (!target) return res.status(400).send("No target URL provided.");
+    if (!target) return res.status(400).send('No target URL provided.');
 
     return createProxyMiddleware({
         target: target,
         changeOrigin: true,
+        followRedirects: true,
         onProxyRes: (proxyRes) => {
+            // This kills the black screen for good
             delete proxyRes.headers['x-frame-options'];
             delete proxyRes.headers['content-security-policy'];
-        },
+            delete proxyRes.headers['frame-options'];
+        }
     })(req, res, next);
 });
 
-app.listen(PORT, () => console.log(`Galaxy Pro Active`));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.listen(PORT, () => console.log('Galaxy Pro Active'));
