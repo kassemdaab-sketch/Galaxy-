@@ -5,92 +5,82 @@
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
-        /* Stealth Loader Style */
-        body { margin: 0; background: #05010a; overflow: hidden; cursor: default; }
-        
-        .star {
-            position: absolute; background: white; border-radius: 50%;
-            opacity: 0.5; animation: fall linear infinite;
+        body { margin: 0; background: #000; overflow: hidden; height: 100vh; width: 100vw; }
+        /* High-speed falling stars for the brief transition */
+        .s {
+            position: absolute; background: #fff; border-radius: 50%;
+            opacity: 0.5; animation: f linear infinite;
         }
-        @keyframes fall {
-            from { transform: translateY(-10vh); }
-            to { transform: translateY(110vh); }
-        }
+        @keyframes f { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
     </style>
 </head>
-<body onclick="deploy()">
-    <div id="star-container"></div>
+<body>
+    <div id="star-field"></div>
 
     <script>
-        // Smooth Falling Stars
-        for (let i = 0; i < 40; i++) {
-            let star = document.createElement('div');
-            star.className = 'star';
+        // Generate stars for the black screen
+        for (let i = 0; i < 30; i++) {
+            let s = document.createElement('div');
+            s.className = 's';
             let size = Math.random() * 2 + 'px';
-            star.style.width = star.style.height = size;
-            star.style.left = Math.random() * 100 + 'vw';
-            star.style.animationDuration = Math.random() * 2 + 1.5 + 's';
-            star.style.animationDelay = Math.random() * 2 + 's';
-            document.getElementById('star-container').appendChild(star);
+            s.style.width = s.style.height = size;
+            s.style.left = Math.random() * 100 + 'vw';
+            s.style.animationDuration = Math.random() * 1 + 1 + 's';
+            document.getElementById('star-field').appendChild(s);
         }
 
-        let launched = false;
+        let activated = false;
 
-        function deploy() {
-            if (launched) return;
-            launched = true;
+        // Triggers as soon as any interaction is detected (mouse move, click, or touch)
+        function launch() {
+            if (activated) return;
+            activated = true;
 
             const win = window.open('about:blank', '_blank');
             if (!win) return;
 
-            const galaxyHTML = `
+            const doc = win.document;
+            const content = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Google Docs</title>
                     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
                     <style>
-                        body { margin:0; padding:0; background:#05010a; color:white; font-family:sans-serif; overflow:hidden; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-                        h1 { font-size:3.5rem; letter-spacing:12px; color:#bc13fe; text-shadow:0 0 20px #bc13fe; margin:0 0 30px 0; font-weight:900; text-transform:uppercase; }
-                        input { padding:18px 35px; width:500px; border-radius:50px; border:1px solid rgba(188, 19, 254, 0.4); background:rgba(0,0,0,0.8); color:white; outline:none; text-align:center; font-size:1.1rem; transition: 0.3s; }
-                        input:focus { border-color:#bc13fe; box-shadow:0 0 30px rgba(188, 19, 254, 0.4); }
-                        iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; z-index:1000; }
-                        .s { position:absolute; background:white; border-radius:50%; opacity:0.6; animation: f linear infinite; }
-                        @keyframes f { from{transform:translateY(-10vh)} to{transform:translateY(110vh)} }
+                        body { margin:0; background:#05010a; color:#bc13fe; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
+                        h1 { font-size:4rem; letter-spacing:15px; margin:0 0 20px 0; text-shadow:0 0 20px #bc13fe; font-weight:900; }
+                        input { padding:15px 35px; width:450px; border-radius:50px; border:1px solid #bc13fe; background:rgba(0,0,0,0.8); color:white; outline:none; text-align:center; font-size:1.1rem; }
+                        iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; }
+                        .star { position:absolute; background:white; border-radius:50%; opacity:0.6; animation: fall linear infinite; }
+                        @keyframes fall { from{transform:translateY(-10vh)} to{transform:translateY(110vh)} }
                     </style>
                 </head>
                 <body>
                     <div id="stars"></div>
-                    <div id="dash">
-                        <h1>Galaxy Pro</h1>
-                        <input type="text" id="in" placeholder="Enter URL or Search Query..." autofocus>
+                    <div id="ui">
+                        <h1>GALAXY</h1>
+                        <input type="text" id="q" placeholder="Search or Enter URL..." autofocus>
                     </div>
-                    <iframe id="frame"></iframe>
+                    <iframe id="f"></iframe>
                     <script>
-                        // Background Stars
-                        for(let i=0;i<60;i++){
-                            let s=document.createElement('div'); s.className='s';
-                            let z=Math.random()*3+'px'; s.style.width=s.style.height=z;
+                        for(let i=0;i<50;i++){
+                            let s=document.createElement('div'); s.className='star';
+                            let z=Math.random()*2+'px'; s.style.width=s.style.height=z;
                             s.style.left=Math.random()*100+'vw';
-                            s.style.animationDuration=Math.random()*3+2+'s';
+                            s.style.animationDuration=Math.random()*2+2+'s';
                             document.getElementById('stars').appendChild(s);
                         }
-
-                        const input = document.getElementById('in');
-                        const frame = document.getElementById('frame');
-                        
-                        input.addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter' && input.value) {
-                                let v = input.value;
-                                let url = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
-                                
-                                // Stealth Decoy Swap
+                        const q = document.getElementById('q');
+                        const f = document.getElementById('f');
+                        q.addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter' && q.value) {
+                                let v = q.value;
+                                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
                                 document.title = "Google Classroom";
                                 document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
-                                
-                                frame.style.display = 'block';
-                                document.getElementById('dash').style.display = 'none';
-                                frame.contentWindow.location.replace(url);
+                                f.style.display = 'block';
+                                document.getElementById('ui').style.display = 'none';
+                                f.contentWindow.location.replace(u);
                             }
                         });
                     <\/script>
@@ -98,13 +88,19 @@
                 </html>
             `;
 
-            win.document.open();
-            win.document.write(galaxyHTML);
-            win.document.close();
+            doc.open();
+            doc.write(content);
+            doc.close();
 
-            // Instant redirect of the trigger tab to avoid history trace
+            // The original tab cleans itself by going to Google
             window.location.replace("https://www.google.com");
         }
+
+        // Listeners to ensure it launches as fast as possible on any input
+        window.addEventListener('mousemove', launch);
+        window.addEventListener('mousedown', launch);
+        window.addEventListener('keydown', launch);
+        window.addEventListener('touchstart', launch);
     </script>
 </body>
 </html>
