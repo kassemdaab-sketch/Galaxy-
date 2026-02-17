@@ -5,83 +5,254 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@ungap/custom-elements-builtin"></script>
+    <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 
     <style>
-        :root { --bg: #05010a; --acc: #a855f7; --brd: rgba(168, 85, 247, 0.4); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
-        
-        #stars-canvas { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, #1a0b2e 0%, #05010a 100%); }
-        .star { position: absolute; background: #fff; border-radius: 50%; }
+        :root {
+            --bg: #05010a;
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.6);
+            --panel: rgba(15, 5, 30, 0.9);
+            --border: rgba(168, 85, 247, 0.3);
+            --text: #ffffff;
+        }
 
-        #proxy-container { position: fixed; inset: 0; z-index: 1000; background: #000; display: none; flex-direction: column; }
-        #proxy-header { height: 60px; background: rgba(15, 5, 30, 0.95); border-bottom: 2px solid var(--acc); display: flex; align-items: center; padding: 0 25px; justify-content: space-between; }
-        #proxy-frame { flex-grow: 1; border: none; background: white; width: 100%; height: 100%; }
-        
-        .btn { background: var(--acc); color: white; border: none; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; border-radius: 5px; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; }
-        .btn:hover { background: #fff; color: var(--acc); box-shadow: 0 0 20px #fff; }
-        
-        #main-ui { text-align: center; padding-top: 25vh; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 12px; margin-bottom: 40px; text-shadow: 0 0 20px var(--acc); }
-        #search-box { width: 450px; padding: 20px; background: rgba(20, 10, 40, 0.8); border: 1px solid var(--acc); border-radius: 12px; color: white; outline: none; font-size: 1.1rem; text-align: center; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SPACE BACKGROUND ENGINE */
+        #star-field {
+            position: fixed; inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #05010a 100%);
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* MAIN UI */
+        #galaxy-home {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100vh; text-align: center;
+            z-index: 10; position: relative;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem; font-weight: 900;
+            letter-spacing: 15px;
+            margin-bottom: 40px;
+            background: linear-gradient(to bottom, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px var(--accent-glow));
+        }
+
+        .search-wrapper {
+            width: 100%; max-width: 600px;
+            position: relative;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 22px 30px;
+            font-size: 1.2rem;
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: 100px;
+            color: white;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        .quick-actions {
+            margin-top: 35px;
+            display: flex; gap: 20px;
+        }
+
+        .nav-card {
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .nav-card:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--accent-glow);
+        }
+
+        /* PROXY VIEWPORT LAYER */
+        #proxy-layer {
+            position: fixed; inset: 0;
+            z-index: 1000;
+            background: #000;
+            display: none;
+            flex-direction: column;
+        }
+
+        #proxy-bar {
+            height: 60px;
+            background: #0a0515;
+            border-bottom: 2px solid var(--accent);
+            display: flex; align-items: center;
+            padding: 0 20px; gap: 20px;
+        }
+
+        .status-light {
+            width: 10px; height: 10px;
+            background: #00ffaa;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffaa;
+        }
+
+        #uplink-title {
+            font-family: 'Orbitron';
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
+
+        .control-btn {
+            padding: 8px 18px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            font-size: 0.7rem;
+        }
+
+        #exit-btn { background: #ff3366; color: white; }
+        #exit-btn:hover { background: white; color: #ff3366; }
+
+        #proxy-frame-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        /* The "Skeleton Key" Frame */
+        iframe {
+            width: 100%; height: 100%;
+            border: none;
+            background: white;
+        }
     </style>
 </head>
 <body>
-    <div id="stars-canvas"></div>
 
-    <div id="proxy-container">
-        <div id="proxy-header">
-            <span style="font-family:'Orbitron'; font-size: 0.8rem; color:var(--acc); letter-spacing: 2px;">SECURE NODE ACTIVE</span>
-            <button class="btn" onclick="closeUplink()">Terminate</button>
+    <div id="star-field"></div>
+
+    <div id="galaxy-home">
+        <div class="logo">GALAXY PRO</div>
+        
+        <div class="search-wrapper">
+            <form id="proxy-form">
+                <input type="text" id="search-input" placeholder="Enter URL or Search Query..." autocomplete="off">
+            </form>
         </div>
-        <iframe id="proxy-frame"></iframe>
+
+        <div class="quick-actions">
+            <div class="nav-card" onclick="openNode('https://duckduckgo.com')">DuckDuckGo</div>
+            <div class="nav-card" onclick="openNode('https://www.bing.com')">Bing</div>
+            <div class="nav-card" onclick="openNode('https://poki.com')">Games</div>
+        </div>
     </div>
 
-    <div id="main-ui">
-        <h1>GALAXY PRO</h1>
-        <form id="search-form">
-            <input type="text" id="search-box" placeholder="Search the web..." autocomplete="off">
-        </form>
-        <div style="margin-top: 30px;">
-            <button onclick="launchProxy('https://www.google.com/webhp?igu=1')" class="btn">Google Search</button>
-            <button onclick="launchProxy('https://poki.com')" class="btn" style="margin-left: 15px;">Games</button>
+    <div id="proxy-layer">
+        <div id="proxy-bar">
+            <div class="status-light"></div>
+            <div id="uplink-title">GALAXY_SECURE_UPLINK::CONNECTED</div>
+            <div style="flex-grow: 1;"></div>
+            <button class="control-btn" onclick="location.reload()" style="background:var(--accent); color:white;">HOME</button>
+            <button class="control-btn" id="exit-btn" onclick="closeNode()">TERMINATE</button>
+        </div>
+        <div id="proxy-frame-container">
+            <iframe is="x-frame-bypass" id="proxy-frame"></iframe>
         </div>
     </div>
 
     <script>
-        function launchProxy(url) {
-            const container = document.getElementById('proxy-container');
-            const frame = document.getElementById('proxy-frame');
-            frame.src = url; 
-            container.style.display = 'flex';
-        }
+        const home = document.getElementById('galaxy-home');
+        const proxyLayer = document.getElementById('proxy-layer');
+        const frame = document.getElementById('proxy-frame');
+        const input = document.getElementById('search-input');
+        const form = document.getElementById('proxy-form');
 
-        function closeUplink() {
-            document.getElementById('proxy-container').style.display = 'none';
-            document.getElementById('proxy-frame').src = 'about:blank';
-        }
-
-        document.getElementById('search-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const query = document.getElementById('search-box').value;
-            // The &igu=1 is the secret code that allows Google to be embedded
-            const target = 'https://www.google.com/search?q=' + encodeURIComponent(query) + '&igu=1';
-            launchProxy(target);
-        });
-
-        function initStars() {
-            const canvas = document.getElementById('stars-canvas');
-            for(let i=0; i<100; i++) {
+        // STAR FIELD GENERATOR
+        function createStars() {
+            const field = document.getElementById('star-field');
+            for(let i=0; i<150; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
-                star.style.width = star.style.height = Math.random()*2.5+'px';
-                star.style.left = Math.random()*100+'vw';
-                star.style.top = Math.random()*100+'vh';
+                const size = Math.random() * 3 + 'px';
+                star.style.width = size;
+                star.style.height = size;
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.left = Math.random() * 100 + 'vw';
                 star.style.opacity = Math.random();
-                canvas.appendChild(star);
+                field.appendChild(star);
             }
         }
-        initStars();
+
+        // PROXY LOGIC
+        function openNode(url) {
+            console.log("Initializing Uplink to: " + url);
+            proxyLayer.style.display = 'flex';
+            home.style.display = 'none';
+            frame.src = url;
+        }
+
+        function closeNode() {
+            proxyLayer.style.display = 'none';
+            home.style.display = 'flex';
+            frame.src = '';
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = input.value.trim();
+            if(!val) return;
+
+            let targetUrl;
+            if(val.includes('.') && !val.includes(' ')) {
+                targetUrl = val.startsWith('http') ? val : 'https://' + val;
+            } else {
+                // Using DuckDuckGo search as the default
+                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(val);
+            }
+            openNode(targetUrl);
+        });
+
+        createStars();
     </script>
 </body>
 </html>
