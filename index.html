@@ -14,26 +14,21 @@
         :root { --bg: #05010a; --acc: #a855f7; --brd: rgba(168, 85, 247, 0.4); }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
         
-        /* Background Stars */
+        /* Background */
         #stars-canvas { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, #1a0b2e 0%, #05010a 100%); }
-        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d) infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .star { position: absolute; background: #fff; border-radius: 50%; }
 
         /* Proxy Viewport */
         #proxy-container { position: fixed; inset: 0; z-index: 1000; background: #000; display: none; flex-direction: column; }
         #proxy-header { height: 60px; background: rgba(15, 5, 30, 0.95); border-bottom: 2px solid var(--acc); display: flex; align-items: center; padding: 0 25px; justify-content: space-between; }
-        #proxy-frame { flex-grow: 1; border: none; background: white; width: 100%; }
+        #proxy-frame { flex-grow: 1; border: none; background: white; width: 100%; height: 100%; }
         
-        /* UI Components */
-        .btn { background: var(--acc); color: white; border: none; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; border-radius: 5px; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+        .btn { background: var(--acc); color: white; border: none; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; border-radius: 5px; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; }
         .btn:hover { background: #fff; color: var(--acc); box-shadow: 0 0 20px #fff; }
         
         #main-ui { text-align: center; padding-top: 25vh; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4.5rem; letter-spacing: 15px; margin-bottom: 40px; text-shadow: 0 0 25px var(--acc); }
-        
-        .search-container { position: relative; width: 550px; margin: 0 auto; }
-        #search-box { width: 100%; padding: 22px; background: rgba(20, 10, 40, 0.8); border: 1px solid var(--acc); border-radius: 15px; color: white; outline: none; font-size: 1.1rem; text-align: center; backdrop-filter: blur(15px); transition: 0.4s; }
-        #search-box:focus { border-color: #fff; box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 12px; margin-bottom: 40px; text-shadow: 0 0 20px var(--acc); }
+        #search-box { width: 450px; padding: 20px; background: rgba(20, 10, 40, 0.8); border: 1px solid var(--acc); border-radius: 12px; color: white; outline: none; font-size: 1.1rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -41,26 +36,20 @@
 
     <div id="proxy-container">
         <div id="proxy-header">
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <span style="font-family:'Orbitron'; font-size: 0.9rem; color:var(--acc); letter-spacing: 2px;">GALAXY_UPLINK</span>
-                <button class="btn" onclick="location.reload()">HOME</button>
-            </div>
-            <button class="btn" style="background: #ff4444;" onclick="closeUplink()">TERMINATE</button>
+            <span style="font-family:'Orbitron'; font-size: 0.8rem; color:var(--acc); letter-spacing: 2px;">D-D-G UPLINK ACTIVE</span>
+            <button class="btn" onclick="closeUplink()">Terminate Session</button>
         </div>
-        <iframe is="x-frame-bypass" id="proxy-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+        <iframe is="x-frame-bypass" id="proxy-frame"></iframe>
     </div>
 
     <div id="main-ui">
         <h1>GALAXY PRO</h1>
-        <div class="search-container">
-            <form id="search-form">
-                <input type="text" id="search-box" placeholder="Enter URL or Search Query..." autocomplete="off">
-            </form>
-        </div>
-        <div style="margin-top: 40px;">
-            <button onclick="launchProxy('https://poki.com')" class="btn">GAMES</button>
-            <button onclick="launchProxy('https://www.google.com/webhp?igu=1')" class="btn" style="margin-left: 15px;">GOOGLE</button>
-            <button onclick="launchProxy('https://www.bing.com')" class="btn" style="margin-left: 15px;">BING</button>
+        <form id="search-form">
+            <input type="text" id="search-box" placeholder="Search DuckDuckGo..." autocomplete="off">
+        </form>
+        <div style="margin-top: 30px;">
+            <button onclick="launchProxy('https://duckduckgo.com')" class="btn">DuckDuckGo Home</button>
+            <button onclick="launchProxy('https://poki.com')" class="btn" style="margin-left: 15px;">Games</button>
         </div>
     </div>
 
@@ -68,6 +57,8 @@
         function launchProxy(url) {
             const container = document.getElementById('proxy-container');
             const frame = document.getElementById('proxy-frame');
+            
+            // The bypass script works best when the URL is set directly
             frame.src = url; 
             container.style.display = 'flex';
         }
@@ -79,30 +70,21 @@
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const input = document.getElementById('search-box').value.trim();
-            
-            let url;
-            if (input.includes('.') && !input.includes(' ')) {
-                // If it looks like a URL, add https if missing
-                url = input.startsWith('http') ? input : 'https://' + input;
-            } else {
-                // Otherwise, use Google's 'igu' (embedded) mode
-                url = 'https://www.google.com/search?q=' + encodeURIComponent(input) + '&igu=1';
-            }
-            launchProxy(url);
+            const query = document.getElementById('search-box').value;
+            // This builds the specific DuckDuckGo search URL structure
+            const target = 'https://duckduckgo.com/?q=' + encodeURIComponent(query);
+            launchProxy(target);
         });
 
-        // Background Star Gen
         function initStars() {
             const canvas = document.getElementById('stars-canvas');
-            for(let i=0; i<150; i++) {
+            for(let i=0; i<100; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
-                const size = Math.random()*3+'px';
-                star.style.width = star.style.height = size;
+                star.style.width = star.style.height = Math.random()*2.5+'px';
                 star.style.left = Math.random()*100+'vw';
                 star.style.top = Math.random()*100+'vh';
-                star.style.setProperty('--d', (Math.random()*3 + 2) + 's');
+                star.style.opacity = Math.random();
                 canvas.appendChild(star);
             }
         }
