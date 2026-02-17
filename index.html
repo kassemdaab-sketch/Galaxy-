@@ -1,134 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="tab-title">Google Docs</title>
-    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
-    <style>
-        :root { --accent: #bc13fe; --bg: #05010a; --glass: rgba(15, 5, 25, 0.9); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; }
-        #stars-canvas { position: fixed; inset: 0; z-index: -1; }
-        .main-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron', sans-serif; font-size: 4rem; letter-spacing: 15px; margin: 0; text-shadow: 0 0 20px var(--accent); animation: pulse 4s infinite alternate; }
-        @keyframes pulse { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.02); } }
-        .search-container { margin-top: 40px; text-align: center; }
-        #search-input { width: 500px; padding: 18px 30px; border-radius: 50px; border: 2px solid var(--accent); background: rgba(0,0,0,0.7); color: #fff; font-size: 1.1rem; outline: none; transition: 0.3s; text-align: center; }
-        #search-input:focus { width: 550px; box-shadow: 0 0 30px var(--accent); }
-        .engine-selector { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        .engine-pill { padding: 8px 15px; border-radius: 20px; border: 1px solid #333; cursor: pointer; font-size: 0.7rem; font-family: 'Orbitron'; transition: 0.3s; opacity: 0.6; }
-        .engine-pill.active { border-color: var(--accent); color: var(--accent); opacity: 1; box-shadow: 0 0 10px var(--accent); }
-        #drawer { position: fixed; right: -300px; top: 0; bottom: 0; width: 280px; background: var(--glass); border-left: 1px solid var(--accent); padding: 20px; transition: 0.5s; z-index: 100; }
-        #drawer.open { right: 0; }
-        .tab-trigger { position: absolute; left: -40px; top: 50%; background: var(--accent); padding: 15px 5px; cursor: pointer; writing-mode: vertical-rl; border-radius: 5px 0 0 5px; font-size: 0.7rem; font-weight: bold; }
-        .log-box { position: fixed; bottom: 20px; left: 20px; width: 300px; height: 100px; background: rgba(0,0,0,0.8); border: 1px solid #333; font-size: 0.7rem; padding: 10px; color: #0f0; overflow: hidden; }
-    </style>
-</head>
-<body>
+// Replace the old launchInTab with this smarter version
+function launchInTab(target) {
+    addLog("ROUTING THROUGH GALAXY UPLINK...");
+    const cloak = document.getElementById('cloak-select').value;
+    const identities = {
+        docs: ["Google Docs", "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico"],
+        classroom: ["Classes", "https://ssl.gstatic.com/classroom/favicon.png"],
+        canvas: ["Dashboard", "https://du11bjcvkw674.cloudfront.net/favicon.ico"]
+    };
+    const [title, icon] = identities[cloak];
 
-<canvas id="stars-canvas"></canvas>
+    // This ensures we use our Node.js service for everything
+    const proxyUrl = `/service?url=${encodeURIComponent(target)}`;
 
-<div class="main-ui">
-    <h1>GALAXY PRO</h1>
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="ENTER UPLINK TARGET..." autofocus>
-        <div class="engine-selector">
-            <div class="engine-pill" onclick="setEngine('ddg', this)">DUCKDUCKGO</div>
-            <div class="engine-pill active" onclick="setEngine('google', this)">GOOGLE</div>
-            <div class="engine-pill" onclick="setEngine('brave', this)">BRAVE</div>
-        </div>
-    </div>
-    <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px; font-family: 'JetBrains Mono';">PANIC KEY: [ ` ] | NODE.JS: ACTIVE</p>
-</div>
-
-<div id="drawer">
-    <div class="tab-trigger" onclick="document.getElementById('drawer').classList.toggle('open')">CONFIG</div>
-    <label style="font-size: 0.8rem;">CLOAK SELECTION:</label>
-    <select id="cloak-select" style="width: 100%; background: #000; color: #fff; margin-top: 5px; padding: 5px;">
-        <option value="docs">Google Docs</option>
-        <option value="classroom">Google Classroom</option>
-        <option value="canvas">Canvas</option>
-    </select>
-    <button onclick="localStorage.clear(); location.reload();" style="width:100%; margin-top:20px; background:red; border:none; color:white; padding:10px; cursor:pointer;">WIPE SESSION</button>
-</div>
-
-<div class="log-box" id="logs"></div>
-
-<script>
-    let currentEngine = 'google';
-    const input = document.getElementById('search-input');
-    const logs = document.getElementById('logs');
-
-    function addLog(msg) {
-        const div = document.createElement('div');
-        div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
-        logs.prepend(div);
-    }
-
-    function setEngine(engine, el) {
-        currentEngine = engine;
-        document.querySelectorAll('.engine-pill').forEach(p => p.classList.remove('active'));
-        el.classList.add('active');
-        addLog(`ENGINE_SWITCHED: ${engine.toUpperCase()}`);
-    }
-
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const val = input.value.trim();
-            if (!val) return;
-            let url = val;
-            const isUrl = val.includes('.') && !val.includes(' ');
-            if (!isUrl) {
-                const searchPaths = { google: "https://www.google.com/search?q=", ddg: "https://duckduckgo.com/?q=", brave: "https://search.brave.com/search?q=" };
-                url = searchPaths[currentEngine] + encodeURIComponent(val);
-            } else {
-                if (!val.startsWith('http')) url = 'https://' + val;
-            }
-            launchInTab(url);
-        }
-    });
-
-    function launchInTab(target) {
-        addLog("BYPASSING SECURITY HEADERS...");
-        const cloak = document.getElementById('cloak-select').value;
-        const identities = {
-            docs: ["Google Docs", "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico"],
-            classroom: ["Classes", "https://ssl.gstatic.com/classroom/favicon.png"],
-            canvas: ["Dashboard", "https://du11bjcvkw674.cloudfront.net/favicon.ico"]
-        };
-        const [title, icon] = identities[cloak];
-
-        // The Magic Logic: Routes through your Render server
-        const proxyUrl = `/service?url=${encodeURIComponent(target)}`;
-
-        document.open();
-        document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${title}</title>
-                <link rel="icon" href="${icon}">
-                <style>body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; } iframe { width: 100%; height: 100%; border: none; }</style>
-            </head>
-            <body>
-                <iframe src="${proxyUrl}"></iframe>
-                <script>
-                    window.addEventListener('keydown', (e) => { if (e.key === '\`') window.location.replace('https://classroom.google.com'); });
-                <\/script>
-            </body>
-            </html>
-        `);
-        document.close();
-    }
-
-    const canvas = document.getElementById('stars-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const stars = Array(120).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.3 }));
-    function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#fff"; stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill(); }); requestAnimationFrame(draw); }
-    draw();
-</script>
-</body>
-</html>
+    document.open();
+    document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${title}</title>
+            <link rel="icon" href="${icon}">
+            <style>body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; } iframe { width: 100%; height: 100%; border: none; }</style>
+        </head>
+        <body>
+            <iframe src="${proxyUrl}"></iframe>
+            <script>
+                window.addEventListener('keydown', (e) => { if (e.key === '\`') window.location.replace('https://classroom.google.com'); });
+            <\/script>
+        </body>
+        </html>
+    `);
+    document.close();
+}
