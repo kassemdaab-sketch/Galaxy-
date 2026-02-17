@@ -15,6 +15,7 @@
         body { 
             margin: 0; background: var(--bg); color: #fff; 
             font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh;
+            transition: 0.5s filter;
         }
         #stars-canvas { position: fixed; inset: 0; z-index: -1; }
         
@@ -26,9 +27,15 @@
         h1 { 
             font-family: 'Orbitron', sans-serif; font-size: 4rem; 
             letter-spacing: 15px; margin: 0; text-shadow: 0 0 20px var(--accent);
+            animation: pulse 4s infinite alternate;
         }
 
-        .search-container { margin-top: 40px; position: relative; }
+        @keyframes pulse {
+            from { opacity: 0.8; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.02); }
+        }
+
+        .search-container { margin-top: 40px; text-align: center; }
         #search-input {
             width: 500px; padding: 18px 30px; border-radius: 50px;
             border: 2px solid var(--accent); background: rgba(0,0,0,0.7);
@@ -36,6 +43,15 @@
             transition: 0.3s; text-align: center;
         }
         #search-input:focus { width: 550px; box-shadow: 0 0 30px var(--accent); }
+
+        /* Engine Selector Pills */
+        .engine-selector { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .engine-pill {
+            padding: 8px 15px; border-radius: 20px; border: 1px solid #333;
+            cursor: pointer; font-size: 0.7rem; font-family: 'Orbitron';
+            transition: 0.3s; opacity: 0.6;
+        }
+        .engine-pill.active { border-color: var(--accent); color: var(--accent); opacity: 1; box-shadow: 0 0 10px var(--accent); }
 
         #drawer {
             position: fixed; right: -300px; top: 0; bottom: 0; width: 280px;
@@ -54,13 +70,6 @@
             background: rgba(0,0,0,0.8); border: 1px solid #333;
             font-size: 0.7rem; padding: 10px; color: #0f0; overflow: hidden;
         }
-
-        button {
-            width: 100%; padding: 10px; margin-top: 10px;
-            background: transparent; border: 1px solid var(--accent);
-            color: #fff; cursor: pointer; transition: 0.2s;
-        }
-        button:hover { background: var(--accent); }
     </style>
 </head>
 <body>
@@ -69,26 +78,37 @@
 
 <div class="main-ui">
     <h1>GALAXY PRO</h1>
+    
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Enter URL or Search Query..." autofocus>
+        <input type="text" id="search-input" placeholder="ENTER UPLINK TARGET..." autofocus>
+        
+        <div class="engine-selector">
+            <div class="engine-pill" onclick="setEngine('ddg', this)">DUCKDUCKGO</div>
+            <div class="engine-pill active" onclick="setEngine('google', this)">GOOGLE</div>
+            <div class="engine-pill" onclick="setEngine('brave', this)">BRAVE</div>
+        </div>
     </div>
-    <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px;">Press ` (Backtick) for Panic Mode</p>
+    
+    <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px; font-family: 'JetBrains Mono';">
+        PANIC KEY: [ ` ] | SYSTEM: STABLE
+    </p>
 </div>
 
 <div id="drawer">
-    <div class="tab-trigger" onclick="document.getElementById('drawer').classList.toggle('open')">SETTINGS</div>
-    <label style="font-size: 0.8rem;">STEALTH CLOAK:</label>
+    <div class="tab-trigger" onclick="document.getElementById('drawer').classList.toggle('open')">CONFIG</div>
+    <label style="font-size: 0.8rem;">CLOAK SELECTION:</label>
     <select id="cloak-select" style="width: 100%; background: #000; color: #fff; margin-top: 5px; padding: 5px;">
         <option value="docs">Google Docs</option>
         <option value="classroom">Google Classroom</option>
         <option value="canvas">Canvas</option>
     </select>
-    <button onclick="localStorage.clear(); location.reload();" style="color: red; border-color: red;">WIPE SYSTEM</button>
+    <button onclick="localStorage.clear(); location.reload();" style="width:100%; margin-top:20px; background:red; border:none; color:white; padding:10px; cursor:pointer;">WIPE SESSION</button>
 </div>
 
 <div class="log-box" id="logs"></div>
 
 <script>
+    let currentEngine = 'google';
     const input = document.getElementById('search-input');
     const logs = document.getElementById('logs');
 
@@ -98,14 +118,28 @@
         logs.prepend(div);
     }
 
+    function setEngine(engine, el) {
+        currentEngine = engine;
+        document.querySelectorAll('.engine-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        addLog(`ENGINE_SWITCHED: ${engine.toUpperCase()}`);
+    }
+
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const val = input.value.trim();
             if (!val) return;
 
             let url = val;
-            if (!val.includes('.') || val.includes(' ')) {
-                url = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+            const isUrl = val.includes('.') && !val.includes(' ');
+
+            if (!isUrl) {
+                const searchPaths = {
+                    google: "https://www.google.com/search?q=",
+                    ddg: "https://duckduckgo.com/?q=",
+                    brave: "https://search.brave.com/search?q="
+                };
+                url = searchPaths[currentEngine] + encodeURIComponent(val);
             } else {
                 if (!val.startsWith('http')) url = 'https://' + val;
             }
@@ -115,7 +149,7 @@
     });
 
     function launchInTab(target) {
-        addLog("REWRITING DOCUMENT...");
+        addLog("INITIATING DOCUMENT OVERWRITE...");
         
         const cloak = document.getElementById('cloak-select').value;
         const identities = {
@@ -125,7 +159,7 @@
         };
         const [title, icon] = identities[cloak];
 
-        // Replace current page content with a full-screen iframe
+        // Self-destruction of the main page and replacement with proxy frame
         document.open();
         document.write(`
             <!DOCTYPE html>
@@ -135,13 +169,12 @@
                 <link rel="icon" href="${icon}">
                 <style>
                     body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-                    iframe { width: 100%; height: 100%; border: none; margin: 0; padding: 0; }
+                    iframe { width: 100%; height: 100%; border: none; }
                 </style>
             </head>
             <body>
                 <iframe src="${target}"></iframe>
                 <script>
-                    window.onbeforeunload = function() { return "System active."; };
                     window.addEventListener('keydown', (e) => {
                         if (e.key === '\`') window.location.replace('https://classroom.google.com');
                     });
@@ -152,16 +185,24 @@
         document.close();
     }
 
-    // Visuals
+    // Stars Canvas logic
     const canvas = document.getElementById('stars-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const stars = Array(120).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.3 }));
+    const stars = Array(120).fill().map(() => ({ 
+        x: Math.random()*canvas.width, 
+        y: Math.random()*canvas.height, 
+        r: Math.random()*1.3 
+    }));
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#fff";
-        stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill(); });
+        stars.forEach(s => { 
+            ctx.beginPath(); 
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); 
+            ctx.fill(); 
+        });
         requestAnimationFrame(draw);
     }
     draw();
