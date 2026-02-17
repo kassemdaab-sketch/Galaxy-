@@ -6,6 +6,7 @@
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
         body { margin: 0; background: #000; overflow: hidden; height: 100vh; cursor: crosshair; }
+        /* Ultra-fast stars for the transition */
         .s { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; animation: f linear infinite; }
         @keyframes f { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
     </style>
@@ -40,8 +41,7 @@
                         body { margin:0; background:#05010a; color:#bc13fe; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
                         h1 { font-family: 'Courier New', monospace; font-size:4.5rem; letter-spacing:15px; margin:0; text-shadow:0 0 25px #bc13fe; font-weight:900; }
                         input { margin-top: 40px; padding:18px 40px; width:550px; border-radius:50px; border:1px solid #bc13fe; background:rgba(0,0,0,0.9); color:white; outline:none; text-align:center; font-size:1.2rem; }
-                        .btn-box { margin-top: 30px; display: flex; gap: 15px; }
-                        .rbx-btn { padding: 15px 40px; background: transparent; border: 2px solid #bc13fe; color: white; cursor: pointer; font-family: sans-serif; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+                        .rbx-btn { margin-top: 30px; padding: 15px 40px; background: transparent; border: 2px solid #bc13fe; color: white; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
                         .rbx-btn:hover { background: #bc13fe; box-shadow: 0 0 20px #bc13fe; transform: scale(1.1); }
                         iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; background: #000; }
                         .star { position:absolute; background:white; border-radius:50%; opacity:0.4; animation: fall linear infinite; }
@@ -53,9 +53,7 @@
                     <div id="u">
                         <h1>GALAXY</h1>
                         <input type="text" id="q" placeholder="SEARCH OR ENTER URL..." autofocus>
-                        <div class="btn-box">
-                            <button class="rbx-btn" onclick="openRoblox()">Launch Roblox</button>
-                        </div>
+                        <button class="rbx-btn" onclick="openRoblox()">Launch Roblox</button>
                     </div>
                     <iframe id="f"></iframe>
                     <script>
@@ -67,30 +65,27 @@
                             document.getElementById('s').appendChild(s);
                         }
 
-                        const q = document.getElementById('q');
-                        const f = document.getElementById('f');
-                        const u = document.getElementById('u');
-
                         function deploy(targetUrl) {
-                            // Decoy Swap
+                            // Tab Cloaking Swap
                             document.title = "Google Classroom";
                             document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
                             
+                            const f = document.getElementById('f');
                             f.style.display = 'block';
-                            u.style.display = 'none';
+                            document.getElementById('u').style.display = 'none';
                             f.contentWindow.location.replace(targetUrl);
                         }
 
                         function openRoblox() {
-                            // Points to now.gg Roblox mirror
+                            // Standard web mirror for fast performance
                             deploy('https://nowgg.lol/play/roblox-corporation/5349/roblox');
                         }
 
-                        q.addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter' && q.value) {
-                                let val = q.value;
-                                let target = val.includes('.') ? (val.startsWith('http') ? val : 'https://'+val) : 'https://www.bing.com/search?q='+encodeURIComponent(val);
-                                deploy(target);
+                        document.getElementById('q').addEventListener('keydown', (e) => {
+                            if(e.key === 'Enter' && e.target.value) {
+                                let v = e.target.value;
+                                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
+                                deploy(u);
                             }
                         });
                     <\/script>
@@ -98,12 +93,14 @@
                 </html>
             `;
 
+            // Convert code to Blob to bypass history tracking
             const blob = new Blob([code], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
             
             const win = window.open('about:blank', '_blank');
             if (win) {
                 win.location.href = blobUrl;
+                // Instant redirect to hide the entrance
                 window.location.replace("https://www.google.com");
             }
         }
