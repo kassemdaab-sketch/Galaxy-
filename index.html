@@ -14,7 +14,6 @@
             --accent-glow: hsla(var(--accent-hue), 100%, 53%, 0.5);
             --glass: rgba(10, 2, 20, 0.85); 
             --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
-            --safe-green: #00ff99;
         }
 
         body { 
@@ -26,148 +25,109 @@
 
         #bg-layer { position: fixed; inset: 0; z-index: -1; background-size: cover !important; background-position: center !important; }
         
-        /* Dashboard Content */
-        #main-content { display: none; text-align: center; padding-top: 80px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4.5rem; font-weight: 900; margin: 10px 0; letter-spacing: 12px; }
+        #main-content { display: none; text-align: center; padding-top: 100px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; }
+        h1 { font-family: 'Orbitron'; font-size: 5rem; font-weight: 900; margin: 10px 0; letter-spacing: 15px; color: var(--accent); text-shadow: 0 0 20px var(--accent-glow); }
 
-        /* Search Bar */
-        .search-container { margin: 40px auto; width: 550px; max-width: 90%; }
+        .search-container { margin: 50px auto; width: 600px; max-width: 90%; }
         #search-box { 
-            width: 100%; padding: 18px 25px; background: rgba(0,0,0,0.6); 
-            border: 2px solid var(--border); border-radius: 12px; color: white; 
-            font-family: 'JetBrains Mono'; font-size: 1rem; outline: none; transition: 0.3s;
+            width: 100%; padding: 20px 30px; background: rgba(255,255,255,0.05); 
+            border: 2px solid var(--border); border-radius: 50px; color: white; 
+            font-family: 'JetBrains Mono'; font-size: 1.1rem; outline: none; transition: 0.4s;
+            backdrop-filter: blur(10px);
         }
-        #search-box:focus { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+        #search-box:focus { border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow); background: rgba(0,0,0,0.8); }
 
-        /* Navigation */
-        .nav-btn { display: inline-block; margin: 10px; padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.75rem; border-radius: 4px; transition: 0.3s; }
-        .nav-btn:hover { background: var(--accent); transform: scale(1.05); }
+        .nav-btn { display: inline-block; margin: 10px; padding: 15px 35px; background: var(--glass); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.8rem; border-radius: 8px; transition: 0.3s; cursor: pointer; }
+        .nav-btn:hover { background: var(--accent); box-shadow: 0 0 25px var(--accent-glow); transform: translateY(-3px); }
 
-        /* IFRAME VIEWER */
-        #frame-container {
-            position: fixed; inset: 0; background: #fff; z-index: 2000; display: none;
-        }
-        #proxy-frame { width: 100%; height: 100%; border: none; }
-        #frame-tools {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 2001; opacity: 0.3; transition: 0.3s;
-        }
-        #frame-tools:hover { opacity: 1; }
-        .tool-btn { 
-            padding: 5px 15px; background: #000; color: #fff; border: 1px solid var(--accent);
-            border-radius: 20px; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer;
-        }
-
-        /* UI Overlays */
         #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
-        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; }
+        .header-pill { background: var(--glass); padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.8rem; }
         
-        #widget-drawer { 
-            position: fixed; right: -320px; top: 80px; bottom: 80px; width: 300px; 
-            background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border); 
-            border-radius: 20px 0 0 20px; transition: 0.5s; z-index: 9999; padding: 25px; box-sizing: border-box; 
-        }
-        #widget-drawer.open { right: 0; }
-        #drawer-tab { position: absolute; left: -40px; top: 50%; transform: translateY(-50%); background: var(--accent); width: 40px; height: 120px; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; writing-mode: vertical-rl; }
-
         #auth-overlay { position:fixed; inset:0; background:#05010a; display:flex; justify-content:center; align-items:center; z-index:10000; }
         #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
         .star { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; }
+
+        .status-tag { font-size: 0.6rem; color: #00ff99; margin-top: 10px; font-family: 'JetBrains Mono'; }
     </style>
 </head>
 <body>
     <div id="bg-layer"></div>
     <div id="stars-canvas"></div>
 
-    <div id="frame-container">
-        <div id="frame-tools">
-            <button class="tool-btn" onclick="closeFrame()">✕ EXIT TO GALAXY</button>
-            <button class="tool-btn" onclick="refreshFrame()">↻ RELOAD</button>
-        </div>
-        <iframe id="proxy-frame" src=""></iframe>
-    </div>
-
     <div id="neural-header">
         <div class="header-pill" id="neural-clock">00:00:00</div>
         <div class="header-pill" id="pilot-id">PILOT: UNKNOWN</div>
     </div>
 
-    <div id="widget-drawer">
-        <div id="drawer-tab" onclick="toggleDrawer()">ENGINE CONTROL</div>
-        <label style="font-size: 0.6rem;">TAB CLOAK:</label>
-        <select id="cloak-selector" onchange="applyCloak(this.value)" style="width: 100%; background: black; color: white; border: 1px solid var(--border); margin-bottom: 10px; padding: 5px;">
-            <option value="docs">Google Docs</option>
-            <option value="drive">Google Drive</option>
-            <option value="classroom">Google Classroom</option>
-        </select>
-        <label style="font-size: 0.6rem;">DATABASE UPLINK:</label>
-        <select id="engine-selector" style="width: 100%; background: black; color: var(--accent); border: 1px solid var(--border); padding: 5px; margin-bottom: 15px;">
-            <option value="https://www.google.com/search?igu=1&q=">GOOGLE (EMBEDDED)</option>
-            <option value="https://www.bing.com/search?q=">BING</option>
-        </select>
-        <label style="font-size: 0.6rem;">NEURAL HUE:</label>
-        <input type="range" id="hue-slider" min="0" max="360" value="280" oninput="updateHue(this.value)" style="width:100%;">
-        <button onclick="clearData()" style="width:100%; margin-top:20px; cursor:pointer;">WIPE CACHE</button>
-    </div>
-
     <div id="auth-overlay">
-        <div style="background:var(--glass); padding:30px; border:1px solid var(--border); border-radius:15px; text-align:center;">
-            <h2 style="font-family:'Orbitron';">GALAXY CORE</h2>
-            <input type="text" id="user-in" placeholder="CALLSIGN" style="width:80%; padding:12px; margin:20px 0; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--border); text-align:center;">
-            <button onclick="login()" style="width:100%; padding:10px; background:var(--accent); color:white; border:none; cursor:pointer; font-family:'Orbitron';">BOOT SEQUENCE</button>
+        <div style="background:var(--glass); padding:40px; border:1px solid var(--border); border-radius:20px; text-align:center; width: 350px;">
+            <h2 style="font-family:'Orbitron'; color: var(--accent);">GALAXY CORE</h2>
+            <input type="text" id="user-in" placeholder="ENTER CALLSIGN" style="width:85%; padding:15px; margin:25px 0; background:rgba(0,0,0,0.6); color:white; border:1px solid var(--border); text-align:center; border-radius:5px;">
+            <button onclick="login()" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; cursor:pointer; font-family:'Orbitron'; border-radius:5px; font-weight:bold;">INITIALIZE LINK</button>
         </div>
     </div>
 
     <div id="main-content">
         <h1>GALAXY PRO</h1>
+        <p class="status-tag">STATUS: STEALTH PROTOCOL ACTIVE // CLOAK: ENABLED</p>
+        
         <div class="search-container">
-            <input type="text" id="search-box" placeholder="Enter URL or Search Query..." onkeydown="if(event.key==='Enter') processSearch()">
+            <input type="text" id="search-box" placeholder="URL or Search (Stealth Launch)..." onkeydown="if(event.key==='Enter') processStealthLaunch()">
         </div>
-        <div>
-            <a href="#" onclick="launchProxy('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')" class="nav-btn">GAMES</a>
-            <a href="#" onclick="launchProxy('https://sflix.ps/')" class="nav-btn">MOVIES</a>
+
+        <div style="margin-top: 30px;">
+            <div class="nav-btn" onclick="stealthOpen('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')">GAMES</div>
+            <div class="nav-btn" onclick="stealthOpen('https://sflix.ps/')">MOVIES</div>
+            <div class="nav-btn" onclick="clearData()" style="border-color: #ff4444; color: #ff4444;">WIPE SYSTEM</div>
         </div>
     </div>
 
     <script>
+        // Automatic login if user exists
         window.onload = () => {
             const savedUser = localStorage.getItem('pilotCallsign');
-            const savedHue = localStorage.getItem('neuralHue');
-            const savedCloak = localStorage.getItem('tabCloak');
-            if (savedHue) { updateHue(savedHue); document.getElementById('hue-slider').value = savedHue; }
-            if (savedCloak) { applyCloak(savedCloak); document.getElementById('cloak-selector').value = savedCloak; }
-            if (savedUser) { login(savedUser); }
+            if (savedUser) login(savedUser);
         };
 
-        function processSearch() {
+        // THE "ABOUT:BLANK" STEALTH LAUNCHER
+        function stealthOpen(url) {
+            const win = window.open();
+            if (!win || win.closed || typeof win.closed === 'undefined') {
+                alert("Pop-up blocked! Please allow pop-ups for stealth mode to work.");
+                return;
+            }
+
+            win.document.body.style.margin = '0';
+            win.document.body.style.height = '100vh';
+            
+            // Setting the tab title and icon in the new blank tab
+            win.document.title = "Google Docs";
+            const link = win.document.createElement('link');
+            link.rel = 'icon';
+            link.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
+            win.document.head.appendChild(link);
+
+            const iframe = win.document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.src = url;
+            
+            win.document.body.appendChild(iframe);
+        }
+
+        function processStealthLaunch() {
             const input = document.getElementById('search-box').value.trim();
-            const engine = document.getElementById('engine-selector').value;
             if (!input) return;
 
             let targetUrl = "";
             if (input.includes('.') && !input.includes(' ')) {
                 targetUrl = input.startsWith('http') ? input : 'https://' + input;
             } else {
-                targetUrl = engine + encodeURIComponent(input);
+                // Using DuckDuckGo for the stealth engine (less blocks than Google)
+                targetUrl = "https://duckduckgo.com/?q=" + encodeURIComponent(input);
             }
-            launchProxy(targetUrl);
-        }
-
-        function launchProxy(url) {
-            const container = document.getElementById('frame-container');
-            const frame = document.getElementById('proxy-frame');
-            frame.src = url;
-            container.style.display = 'block';
-        }
-
-        function closeFrame() {
-            document.getElementById('frame-container').style.display = 'none';
-            document.getElementById('proxy-frame').src = "";
-        }
-
-        function refreshFrame() {
-            const frame = document.getElementById('proxy-frame');
-            frame.src = frame.src;
+            stealthOpen(targetUrl);
         }
 
         function login(storedUser = null) {
@@ -180,28 +140,9 @@
             setInterval(() => { document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
         }
 
-        function applyCloak(type) {
-            const cloaks = {
-                docs: { title: "Google Docs", icon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
-                drive: { title: "My Drive", icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" },
-                classroom: { title: "Classes", icon: "https://ssl.gstatic.com/classroom/favicon.png" }
-            };
-            const data = cloaks[type];
-            document.getElementById('favicon').href = data.icon;
-            document.title = data.title;
-            localStorage.setItem('tabCloak', type);
-        }
-
-        function updateHue(val) { 
-            document.documentElement.style.setProperty('--accent-hue', val);
-            localStorage.setItem('neuralHue', val);
-        }
-
-        function toggleDrawer() { document.getElementById('widget-drawer').classList.toggle('open'); }
-
         function setStars() {
             const container = document.getElementById('stars-canvas');
-            for(let i=0; i<70; i++) {
+            for(let i=0; i<80; i++) {
                 const s = document.createElement('div');
                 s.className = 'star';
                 s.style.width = s.style.height = (Math.random()*2+1) + 'px';
@@ -211,7 +152,12 @@
             }
         }
 
-        function clearData() { localStorage.clear(); location.reload(); }
+        function clearData() {
+            if(confirm("Wipe all neural links and saved data?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
