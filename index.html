@@ -29,47 +29,24 @@
         }
 
         #proxy-container {
-            position: fixed;
-            inset: 0;
-            z-index: 12000;
-            background: #000;
-            display: none;
-            flex-direction: column;
+            position: fixed; inset: 0; z-index: 12000;
+            background: #000; display: none; flex-direction: column;
         }
 
         #proxy-header {
-            height: 50px;
-            background: var(--glass);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 15px;
-            backdrop-filter: blur(10px);
+            height: 50px; background: var(--glass); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 20px; gap: 15px; backdrop-filter: blur(10px);
         }
 
-        #proxy-frame {
-            flex-grow: 1;
-            border: none;
-            background: white;
-        }
+        #proxy-frame { flex-grow: 1; border: none; background: white; }
 
         .proxy-control {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px 15px;
-            font-family: 'Orbitron';
-            font-size: 0.7rem;
-            cursor: pointer;
-            border-radius: 4px;
+            background: var(--accent); color: white; border: none; padding: 6px 15px;
+            font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; border-radius: 4px;
         }
 
         #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
         .star { position: absolute; background: #fff; border-radius: 50%; }
-
-        #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
-        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; }
 
         #main-content { text-align: center; padding-top: 20vh; height: 100vh; position: relative; z-index: 10; }
         h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 10px; margin: 20px 0; }
@@ -95,20 +72,14 @@
         <iframe is="x-frame-bypass" id="proxy-frame" src=""></iframe>
     </div>
 
-    <div id="neural-header">
-        <div class="header-pill" id="neural-clock">00:00:00</div>
-        <div class="header-pill">PILOT: AUTHENTICATED</div>
-    </div>
-
     <div id="main-content">
         <h1 id="glitch-title">GALAXY PRO</h1>
         <form id="search-form">
-            <input type="text" id="search-box" placeholder="ENTER URL OR SEARCH...">
+            <input type="text" id="search-box" placeholder="ENTER URL (e.g. poki.com)...">
         </form>
         <div style="margin-top: 30px;">
             <a href="#" onclick="launchUplink('https://poki.com')" class="nav-btn">GAMES</a>
             <a href="#" onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">SEARCH</a>
-            <a href="#" onclick="launchUplink('https://bing.com')" class="nav-btn">UPLINK</a>
         </div>
     </div>
 
@@ -147,10 +118,6 @@
             div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
             lb.prepend(div);
         }
-
-        setInterval(() => {
-            document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
 
         function initStars() {
             const canvas = document.getElementById('stars-canvas');
