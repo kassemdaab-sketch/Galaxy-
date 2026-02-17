@@ -1,336 +1,137 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="tab-title">Google Docs</title>
-    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;600&display=swap" rel="stylesheet">
-    <style>
-        :root { 
-            --bg-main: #05010a; 
-            --accent-hue: 280;
-            --accent: hsl(var(--accent-hue), 100%, 53%); 
-            --accent-glow: hsla(var(--accent-hue), 100%, 53%, 0.5);
-            --glass: rgba(10, 2, 20, 0.85); 
-            --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
-            --safe-green: #00ff99;
-            --warning-orange: #ff9500;
-        }
+<script>
+        let currentTail = 'rainbow', hue = 0, timerInterval, isCloaked = false;
+        let starDensity = 70, starVelocity = 1.0, tailParticleDensity = 1;
+        let starObjects = [];
 
-        body { 
-            margin: 0; padding: 0; 
-            font-family: 'Outfit', sans-serif; 
-            background: var(--bg-main);
-            color: #fff; overflow: hidden; height: 100vh;
-            transition: opacity 0.5s ease, filter 0.5s ease;
-        }
+        const cloaks = {
+            docs: { title: "Google Docs", icon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
+            drive: { title: "My Drive - Google Drive", icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" },
+            classroom: { title: "Classes", icon: "https://ssl.gstatic.com/classroom/favicon.png" },
+            sheets: { title: "Google Sheets", icon: "https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico" },
+            slides: { title: "Google Slides", icon: "https://ssl.gstatic.com/docs/presentations/images/favicon5.ico" },
+            gmail: { title: "Gmail", icon: "https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon5.ico" },
+            canvas: { title: "Dashboard", icon: "https://du11bjcvkw674.cloudfront.net/favicon.ico" },
+            teams: { title: "Microsoft Teams", icon: "https://statics.teams.cdn.office.net/evergreen-assets/apps/teams_app_icon_v2.ico" },
+            zoom: { title: "Zoom", icon: "https://st1.zoom.us/zoom.ico" },
+            wikipedia: { title: "Wikipedia", icon: "https://en.wikipedia.org/static/favicon/wikipedia.ico" },
+            youtube: { title: "YouTube", icon: "https://www.youtube.com/s/desktop/28e029f1/img/favicon_32x32.png" },
+            outlook: { title: "Outlook", icon: "https://res.cdn.office.net/owamail/20231020005.01/resources/images/favicon.ico" },
+            none: { title: "GALAXY PRO", icon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" }
+        };
 
-        /* --- PROXY VIEWPORT LAYER --- */
-        #proxy-layer {
-            position: fixed; inset: 0; z-index: 20000;
-            background: #000; display: none; flex-direction: column;
-        }
-        #proxy-nav {
-            height: 50px; background: #0a0515; border-bottom: 1px solid var(--accent);
-            display: flex; align-items: center; padding: 0 20px; gap: 20px;
-        }
-        #proxy-frame { flex-grow: 1; border: none; background: white; }
-        .btn-terminate { background: #ff3366; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: radial-gradient(circle 150px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsla(var(--accent-hue), 100%, 50%, 0.15), transparent 80%);
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        body.ghost-active {
-            opacity: 0.4;
-            filter: grayscale(0.8) contrast(1.2);
-            pointer-events: all;
-        }
-
-        #bg-layer { 
-            position: fixed; inset: 0; z-index: -1; 
-            background-size: cover !important; 
-            background-position: center !important; 
-            background-repeat: no-repeat !important;
-            transition: filter 0.3s ease; 
-        }
-
-        .engine-overload { filter: contrast(1.2) brightness(1.1); }
-        .engine-overload h1, .engine-overload .nav-btn {
-            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff !important;
-            animation: glitch 0.2s infinite alternate;
-        }
-
-        .card:hover {
-            box-shadow: 0 0 20px var(--accent-glow);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            transition: 0.3s;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            100% { transform: translate(1px, -1px); }
-        }
-
-        #scanlines {
-            position: fixed; inset: 0; 
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
-            background-size: 100% 3px; z-index: 5000; pointer-events: none; opacity: 0; transition: 0.3s;
-        }
-        .scanlines-on #scanlines { opacity: 1; }
-
-        @keyframes rainbowFull {
-            0% { border-color: #ff0000; color: #ff0000; box-shadow: 0 0 15px #ff0000; }
-            33% { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 15px #00ff00; }
-            66% { border-color: #00ffff; color: #00ffff; box-shadow: 0 0 15px #00ffff; }
-            100% { border-color: #ff0000; color: #ff0000; box-shadow: 0 0 15px #ff0000; }
-        }
-        .rainbow-active .nav-btn, .rainbow-active .card, .rainbow-active h1, 
-        .rainbow-active #search-box, .rainbow-active .header-pill { 
-            animation: rainbowFull 4s infinite linear !important; 
-        }
-
-        #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
-        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; display: flex; align-items: center; gap: 8px; cursor: default; }
-        
-        #system-logs {
-            position: fixed; bottom: 20px; left: 20px; width: 260px; height: 130px;
-            background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 4px;
-            font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--safe-green);
-            padding: 10px; overflow: hidden; pointer-events: none; z-index: 500;
-        }
-
-        #widget-drawer { 
-            position: fixed; right: -320px; top: 80px; bottom: 80px; width: 300px; 
-            background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border); 
-            border-radius: 20px 0 0 20px; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); 
-            z-index: 9999; padding: 25px; box-sizing: border-box; 
-        }
-        #widget-drawer.open { right: 0; }
-        #drawer-tab { 
-            position: absolute; left: -40px; top: 50%; transform: translateY(-50%); 
-            background: var(--accent); color: white; width: 40px; height: 120px; 
-            border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; font-family: 'Orbitron'; font-size: 0.6rem; writing-mode: vertical-rl; 
-            z-index: 10000; box-shadow: -5px 0 15px var(--accent-glow);
-        }
-
-        #main-content { display: none; text-align: center; padding-top: 60px; height: 100vh; overflow-y: auto; position: relative; z-index: 10; transition: transform 0.2s ease-out; }
-        h1 { font-family: 'Orbitron'; font-size: 4.5rem; font-weight: 900; margin: 20px 0; letter-spacing: 12px; transition: 0.3s; }
-        h1:hover { letter-spacing: 20px; color: var(--accent); text-shadow: 0 0 30px var(--accent); }
-
-        #search-box { width: 450px; padding: 15px 25px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 4px; color: white; font-family: 'JetBrains Mono'; outline: none; transition: 0.3s; }
-        #search-box:focus { width: 500px; border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-
-        .nav-btn { display: inline-block; margin: 10px; padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.75rem; letter-spacing: 2px; transition: 0.3s; position: relative; overflow: hidden; cursor: pointer;}
-        .nav-btn:hover { background: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.05); }
-
-        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 40px auto; padding: 0 20px 100px 20px; }
-        .card { background: var(--glass); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: left; position: relative; }
-        
-        .action-btn { width: 100%; padding: 10px; margin-top: 8px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.65rem; transition: 0.2s; text-align: center; }
-        .action-btn:hover { background: var(--accent); color: white; transform: translateX(5px); }
-
-        #stealth-overlay { position: fixed; inset: 0; background: #f0f2f5; color: #1c1e21; z-index: 100000; display: none; padding: 40px; font-family: sans-serif; text-align: left; }
-        #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
-        .star { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; }
-        .particle { position: fixed; pointer-events: none; z-index: 9998; border-radius: 50%; transition: transform 0.8s ease-out, opacity 0.8s ease-out; }
-
-        #speed-hud { font-size: 0.6rem; min-width: 120px; }
-        #speed-bar { width: 50px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px; }
-        #speed-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.1s ease; }
-    </style>
-</head>
-<body onmousemove="handleMouseMove(event)">
-    <div id="bg-layer"></div>
-    <div id="scanlines"></div>
-    <div id="system-logs"></div>
-
-    <div id="proxy-layer">
-        <div id="proxy-nav">
-            <button class="btn-terminate" onclick="terminateUplink()">TERMINATE UPLINK</button>
-            <div id="proxy-status" style="font-family:'JetBrains Mono'; font-size:0.6rem; color:var(--accent)">SIGNAL: ENCRYPTED</div>
-        </div>
-        <iframe id="proxy-frame"></iframe>
-    </div>
-
-    <div id="stealth-overlay" onclick="toggleStealth()">
-        <div style="max-width: 800px; margin: auto;">
-            <h2 style="color: #1877f2;">Google Workspace</h2>
-            <p>Searching My Drive...</p>
-            <hr>
-            <div style="height: 150px; background: #eee; border-radius: 8px;"></div>
-        </div>
-    </div>
-
-    <div id="neural-header">
-        <div style="display: flex; gap: 10px;">
-            <div class="header-pill" id="neural-clock">00:00:00</div>
-            <div class="header-pill" id="weather-display" style="color:var(--safe-green)">ATMOS: SYNCING...</div>
-            <div class="header-pill" id="speed-hud">VEL: <span id="speed-val">0</span> <div id="speed-bar"><div id="speed-fill"></div></div></div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <div class="header-pill" id="timer-display" style="display:none; color:var(--warning-orange)">T-MINUS: 00:00</div>
-            <div class="header-pill" id="pilot-id">PILOT: UNKNOWN</div>
-        </div>
-    </div>
-
-    <div id="widget-drawer">
-        <div id="drawer-tab" onclick="toggleDrawer()">ENGINE CONTROL</div>
-        <div class="engine-select-container" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
-            <label style="font-size: 0.6rem; color: var(--accent); display: block; margin-bottom: 5px;">TAB CLOAK SECTOR:</label>
-            <select id="cloak-selector" onchange="applyCloak(this.value); saveSettings();" style="width: 100%; background: black; color: #fff; border: 1px solid var(--border); font-family: 'Orbitron'; font-size: 0.7rem; padding: 8px; margin-bottom: 10px;">
-                <option value="docs">Google Docs</option>
-                <option value="drive">Google Drive</option>
-                <option value="classroom">Google Classroom</option>
-                <option value="none">Galaxy Pro (Default)</option>
-            </select>
-        </div>
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 0.6rem; color: var(--accent);">NEURAL HUE:</label>
-            <input type="range" id="hue-slider" min="0" max="360" value="280" oninput="updateHue(this.value); saveSettings();">
-        </div>
-        <button class="action-btn" onclick="toggleRainbow(); saveSettings();">TOGGLE RGB SYNC</button>
-        <button class="action-btn" onclick="toggleScanlines(); saveSettings();">TOGGLE SCANLINES</button>
-        <button class="action-btn" onclick="toggleEngine(); saveSettings();">TOGGLE GLITCH ENGINE</button>
-        <textarea id="note-pad" placeholder="// System Notes..." oninput="saveSettings()" style="width:100%; height:120px; background:black; border:1px solid var(--border); color:var(--safe-green); font-family:'JetBrains Mono'; font-size:0.7rem; margin-top:10px; outline:none;"></textarea>
-    </div>
-
-    <div id="auth-overlay" style="position:fixed; inset:0; background:#05010a; display:flex; justify-content:center; align-items:center; z-index:10000;">
-        <div class="card" style="width:320px; text-align:center;">
-            <h2 style="font-family:'Orbitron';">GALAXY CORE</h2>
-            <input type="text" id="user-in" placeholder="CALLSIGN" style="width:80%; padding:12px; margin:20px 0; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--border); text-align:center; font-family:'Orbitron'; outline:none;">
-            <button onclick="login()" class="action-btn" style="background:var(--accent); color:white;">BOOT SEQUENCE</button>
-        </div>
-    </div>
-
-    <div id="main-content">
-        <h1 id="glitch-title">GALAXY PRO</h1>
-        <div style="margin-bottom: 30px;">
-            <input type="text" id="search-box" placeholder="ENTER URL OR SEARCH..." onkeydown="if(event.key==='Enter') launchUplink(this.value)">
-        </div>
-        <div class="grid">
-            <div class="nav-btn" onclick="launchUplink('https://roblox.com')">ROBLOX</div>
-            <div class="nav-btn" onclick="launchUplink('https://youtube.com')">YOUTUBE</div>
-        </div>
-        
-        <div class="settings-grid">
-            <div class="card">
-                <label style="color:var(--accent); font-size:0.6rem; font-family:'Orbitron';">SYSTEM CONFIG</label>
-                <button class="action-btn" onclick="toggleCloak()" id="cloak-btn">ENABLE STEALTH TAB</button>
-                <button class="action-btn" onclick="logout()" style="color:#ff4444; margin-top:10px;">LOGOUT</button>
-            </div>
-        </div>
-    </div>
-    <div id="stars-canvas"></div>
-
-    <script src="/uv/uv.bundle.js"></script>
-    <script src="/uv/uv.config.js"></script>
-
-    <script>
-        let currentTail = 'rainbow', isCloaked = false;
-        let starDensity = 70;
-
-        // --- THE BYPASS LOGIC ---
-        async function launchUplink(val) {
-            if(!val) return;
-            const frame = document.getElementById('proxy-frame');
-            const layer = document.getElementById('proxy-layer');
-            
-            let url = val.trim();
-            if(!url.includes('.') || url.includes(' ')) {
-                url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
-            } else if(!url.startsWith('http')) {
-                url = 'https://' + url;
-            }
-
-            logMessage("CORE: INITIATING_UPLINK");
-            
-            // Register UV Service Worker
-            try {
-                await navigator.serviceWorker.register('/sw.js', {
-                    scope: __uv$config.prefix
-                });
-                frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-                layer.style.display = 'flex';
-                logMessage("UPLINK: SECURE_CONNECTION_ESTABLISHED");
-            } catch (err) {
-                logMessage("ERROR: UPLINK_FAILED");
-                console.error(err);
-            }
-        }
-
-        function terminateUplink() {
-            document.getElementById('proxy-layer').style.display = 'none';
-            document.getElementById('proxy-frame').src = '';
-            logMessage("CORE: UPLINK_TERMINATED");
-        }
-
-        // --- YOUR ORIGINAL FEATURES ---
+        // --- KEYBIND COMMANDS ---
         window.addEventListener('keydown', (e) => {
-            if (e.key === '`') { window.location.href = "https://classroom.google.com"; }
-            if (e.key === 'Escape') { toggleStealth(); }
+            if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); window.open(document.getElementById('btn-proxies').href, '_blank'); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); window.open(document.getElementById('btn-movies').href, '_blank'); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); window.open(document.getElementById('btn-games').href, '_blank'); }
+            if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); toggleScanlines(); saveSettings(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'r') { e.preventDefault(); toggleRainbow(); saveSettings(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'e') { e.preventDefault(); toggleEngine(); saveSettings(); }
+            if (e.key === '`') { e.preventDefault(); window.location.href = document.getElementById('panic-url').value || "https://classroom.google.com"; }
+            if (e.key === 'Escape') { e.preventDefault(); toggleStealth(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'b') { 
+                if(confirm("WIPE SYSTEM?")) { localStorage.clear(); location.reload(); }
+            }
         });
 
+        // --- CORE ENGINES ---
+        function setStars() {
+            const container = document.getElementById('stars-canvas');
+            container.innerHTML = ''; starObjects = [];
+            for(let i=0; i<starDensity; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                let size = Math.random()*2+1;
+                starObjects.push({ el: s, x: Math.random()*100, y: Math.random()*100, speed: size * 0.05 });
+                s.style.width = size+'px'; s.style.height = size+'px';
+                container.appendChild(s);
+            }
+        }
+
+        function animateStars() {
+            starObjects.forEach(s => {
+                s.y += s.speed * starVelocity;
+                if(s.y > 105) s.y = -5;
+                s.el.style.left = s.x + '%';
+                s.el.style.top = s.y + '%';
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        function createTail(e) {
+            if(currentTail === 'void') return;
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = e.clientX + 'px';
+            p.style.top = e.clientY + 'px';
+            const size = Math.random() * 8 + 2;
+            p.style.width = size + 'px'; p.style.height = size + 'px';
+            
+            // Tail Styles
+            if(currentTail === 'rainbow') p.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
+            else if(currentTail === 'neon') p.style.background = 'var(--accent)';
+            else if(currentTail === 'spark') p.style.background = '#fff';
+            else if(currentTail === 'shock') { p.style.background = '#00ffff'; p.style.borderRadius = '0'; }
+            else if(currentTail === 'ghost') { p.style.background = 'rgba(255,255,255,0.2)'; p.style.filter = 'blur(4px)'; }
+
+            document.body.appendChild(p);
+            setTimeout(() => {
+                p.style.transform = `translate(${(Math.random()-0.5)*50}px, ${Math.random()*50}px) scale(0)`;
+                p.style.opacity = '0';
+                setTimeout(() => p.remove(), 800);
+            }, 10);
+        }
+
+        // --- UI & STATE ---
         function handleMouseMove(e) {
             document.body.style.setProperty('--mouse-x', e.clientX + 'px');
             document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+            for (let i = 0; i < tailParticleDensity; i++) createTail(e);
         }
 
-        function updateHue(val) { document.documentElement.style.setProperty('--accent-hue', val); }
-        function toggleEngine() { document.body.classList.toggle('engine-overload'); }
-        function toggleRainbow() { document.body.classList.toggle('rainbow-active'); }
-        function toggleScanlines() { document.body.classList.toggle('scanlines-on'); }
-        function toggleDrawer() { document.getElementById('widget-drawer').classList.toggle('open'); }
-        function toggleStealth() { 
-            const s = document.getElementById('stealth-overlay'); 
-            s.style.display = (s.style.display === 'block') ? 'none' : 'block'; 
-        }
-
-        function login() {
-            const user = document.getElementById('user-in').value || "PILOT";
-            document.getElementById('pilot-id').innerText = "PILOT: " + user;
+        function loadSession() {
+            const user = localStorage.getItem('galaxy_user');
+            if (!user) {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                return;
+            }
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            logMessage("SYSTEM: BOOT_COMPLETE");
-            setStars();
+            document.getElementById('pilot-id').innerText = "PILOT: " + user.toUpperCase();
+            
+            const saved = JSON.parse(localStorage.getItem('galaxy_settings_pro'));
+            if(saved) {
+                if(saved.rainbow) toggleRainbow();
+                if(saved.scanlines) toggleScanlines();
+                if(saved.glitch) toggleEngine();
+                updateHue(saved.hue || 280);
+                setTail(saved.tail || 'rainbow');
+                updateDensity(saved.density || 70);
+                updateVelocity(saved.velocity || 1.0);
+            }
+            setStars(); animateStars();
+            setInterval(() => {
+                document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
+            }, 1000);
         }
 
-        function logout() { location.reload(); }
-
+        function setTail(type) { currentTail = type; logMessage("SYSTEM: TAIL_" + type.toUpperCase()); }
+        function login() { 
+            const name = document.getElementById('user-in').value || "PILOT";
+            localStorage.setItem('galaxy_user', name); 
+            location.reload(); 
+        }
+        function logout() { localStorage.removeItem('galaxy_user'); location.reload(); }
         function logMessage(msg) {
             const lb = document.getElementById('system-logs');
             const div = document.createElement('div');
             div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
             lb.prepend(div);
-            if(lb.childNodes.length > 5) lb.lastChild.remove();
+            if(lb.childNodes.length > 6) lb.lastChild.remove();
         }
 
-        function setStars() {
-            const container = document.getElementById('stars-canvas');
-            for(let i=0; i<starDensity; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                s.style.left = Math.random()*100+'%';
-                s.style.top = Math.random()*100+'%';
-                s.style.width = Math.random()*2+'px';
-                s.style.height = s.style.width;
-                container.appendChild(s);
-            }
-        }
-
-        // Clock
-        setInterval(() => {
-            document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
+        // Initialize
+        window.onload = loadSession;
     </script>
 </body>
 </html>
