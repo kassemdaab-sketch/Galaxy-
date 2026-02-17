@@ -5,153 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #bc13fe; 
-            --bg: #05010a;
-            --border: rgba(188, 19, 254, 0.3);
-        }
         body { 
-            margin: 0; background: var(--bg); color: white; 
-            font-family: 'JetBrains Mono', monospace; text-align: center;
-            height: 100vh; display: flex; flex-direction: column; justify-content: center;
+            margin: 0; background: #05010a; color: white; 
+            font-family: 'JetBrains Mono', monospace; 
+            display: flex; align-items: center; justify-content: center; height: 100vh;
         }
-        .container { z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 10px; margin-bottom: 30px; }
-        
-        .search-box {
-            width: 500px; padding: 20px; border-radius: 50px;
-            border: 2px solid var(--border); background: rgba(255,255,255,0.05);
-            color: white; outline: none; transition: 0.3s; font-size: 1rem;
+        .boot-screen { text-align: center; }
+        .spinner { 
+            width: 40px; height: 40px; border: 4px solid rgba(188, 19, 254, 0.1); 
+            border-top: 4px solid #bc13fe; border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 20px auto;
         }
-        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent); }
-
-        .btn-group { margin-top: 30px; }
-        .nav-btn {
-            padding: 12px 25px; margin: 10px; background: transparent;
-            border: 1px solid var(--accent); color: white; cursor: pointer;
-            font-family: 'Orbitron'; font-size: 0.8rem; transition: 0.3s;
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h1 { font-family: 'Orbitron'; letter-spacing: 5px; font-size: 1.5rem; }
+        #manual-trigger { 
+            display: none; padding: 10px 20px; background: #bc13fe; 
+            border: none; color: white; cursor: pointer; font-family: 'Orbitron';
         }
-        .nav-btn:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        
-        #stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
     </style>
 </head>
 <body>
-    <canvas id="stars"></canvas>
 
-    <div class="container">
-        <h1>GALAXY</h1>
-        <p style="color: #888; margin-bottom: 40px;">// HYPER-STEALTH DEPLOYMENT ACTIVE</p>
-        
-        <input type="text" id="target-url" class="search-box" placeholder="Enter URL or Search Query..." onkeydown="if(event.key==='Enter') launchStealth()">
-        
-        <div class="btn-group">
-            <button class="nav-btn" onclick="launchStealth('https://nowgg.lol')">NOW.GG</button>
-            <button class="nav-btn" onclick="launchStealth('https://discord.com')">DISCORD</button>
-            <button class="nav-btn" onclick="launchStealth('https://youtube.com')">YOUTUBE</button>
-        </div>
+    <div class="boot-screen">
+        <h1 id="status-text">INITIALIZING STEALTH...</h1>
+        <div class="spinner" id="loader"></div>
+        <button id="manual-trigger" onclick="deployGalaxy()">CLICK TO MANUALLY INITIALIZE</button>
+        <p style="font-size: 0.7rem; color: #555; margin-top: 10px;">(Please allow pop-ups if prompted)</p>
     </div>
 
     <script>
-        const eduApps = [
+        const decoys = [
             "https://classroom.google.com",
-            "https://www.edgenuity.com",
             "https://www.khanacademy.org",
-            "https://www.instructure.com/canvas"
+            "https://canvas.instructure.com"
         ];
 
-        function launchStealth(customUrl = null) {
-            let query = customUrl || document.getElementById('target-url').value.trim();
-            if (!query) return;
+        // This runs the moment the page loads
+        window.onload = function() {
+            setTimeout(deployGalaxy, 1500);
+        };
 
-            // 1. Determine final destination
-            let dest = "";
-            if (query.includes('.') && !query.includes(' ')) {
-                dest = query.startsWith('http') ? query : 'https://' + query;
-            } else {
-                dest = "https://www.bing.com/search?q=" + encodeURIComponent(query);
-            }
-
-            // 2. Pick a random "decoy" education site
-            const decoy = eduApps[Math.floor(Math.random() * eduApps.length)];
-
-            // 3. Open the decoy first (interstellar logic)
+        function deployGalaxy() {
+            const decoy = decoys[Math.floor(Math.random() * decoys.length)];
+            
+            // 1. Open the decoy window
             const win = window.open(decoy, '_blank');
-            if (!win) {
-                alert("Pop-up blocked! Allow pop-ups to enable stealth mode.");
+
+            if (!win || win.closed || typeof win.closed === 'undefined') {
+                // If the browser blocked the auto-popup, show the manual button
+                document.getElementById('status-text').innerText = "STEALTH BLOCKED BY BROWSER";
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('manual-trigger').style.display = 'inline-block';
                 return;
             }
 
-            // 4. Inject the about:blank cloaking 
-            // We wait a moment for the window to initialize, then overwrite it
-            win.onload = function() {
-                const doc = win.document;
-                const iframe = doc.createElement('iframe');
+            // 2. Hijack the window to about:blank
+            win.location.replace("about:blank");
 
-                // Set fake metadata
-                doc.title = "Google Docs";
-                const icon = doc.createElement('link');
-                icon.rel = 'icon';
-                icon.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
-                doc.head.appendChild(icon);
+            // 3. Inject the Galaxy Interface into the new cloaked tab
+            const checker = setInterval(() => {
+                if (win.location.href === "about:blank") {
+                    clearInterval(checker);
+                    
+                    const doc = win.document;
+                    doc.title = "Google Docs";
+                    const link = doc.createElement('link');
+                    link.rel = 'icon';
+                    link.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
+                    doc.head.appendChild(link);
 
-                // Style the container
-                doc.body.style.margin = '0';
-                doc.body.style.height = '100vh';
-                doc.body.style.overflow = 'hidden';
-
-                // Configure the stealth iframe
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
-                iframe.style.border = 'none';
-                iframe.src = dest;
-
-                doc.body.innerHTML = ""; // Wipe the decoy content
-                doc.body.appendChild(iframe);
-            };
-
-            // Backup: if the onload doesn't trigger (due to cross-origin), 
-            // try to force the about:blank state
-            setTimeout(() => {
-                try {
-                    if (win.location.hostname !== "about:blank") {
-                        // This forces it into a local-context window we can control
-                        win.location.replace("about:blank"); 
-                        // Then run the injection again on the blank page
-                        setTimeout(() => {
-                            const doc = win.document;
-                            doc.title = "Google Docs";
-                            const iframe = doc.createElement('iframe');
-                            iframe.style.cssText = "position:fixed;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border:none;margin:0;padding:0;overflow:hidden;z-index:999999;";
-                            iframe.src = dest;
-                            doc.body.appendChild(iframe);
-                        }, 100);
-                    }
-                } catch(e) {
-                    console.log("Stealth protocol bypass engaged.");
+                    // Injecting the actual Galaxy CSS and HTML content
+                    doc.body.innerHTML = `
+                        <div style="background:#05010a; color:white; height:100vh; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <h1 style="font-family:Orbitron; letter-spacing:10px;">GALAXY PRO</h1>
+                            <input type="text" id="proxy-in" placeholder="Search or URL..." style="padding:15px; width:400px; border-radius:50px; border:1px solid #bc13fe; background:transparent; color:white; text-align:center;">
+                            <div style="margin-top:20px;">
+                                <button onclick="launch('https://sites.google.com/fcpsschools.net/galaxy-ulimate-gaming/games')" style="padding:10px 20px; background:#bc13fe; border:none; color:white; cursor:pointer;">GAMES</button>
+                            </div>
+                        </div>
+                        <script>
+                            function launch(url) {
+                                document.body.innerHTML = '<iframe src="' + url + '" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none;"></iframe>';
+                            }
+                            document.getElementById('proxy-in').addEventListener('keydown', (e) => {
+                                if(e.key === 'Enter') {
+                                    let val = e.target.value;
+                                    let url = val.includes('.') ? (val.startsWith('http') ? val : 'https://'+val) : 'https://www.bing.com/search?q='+val;
+                                    launch(url);
+                                }
+                            });
+                        <\/script>
+                    `;
+                    
+                    // 4. Redirect the original "trigger" tab to something safe
+                    window.location.replace("https://google.com");
                 }
-            }, 500);
+            }, 100);
         }
-
-        // Star background logic
-        const canvas = document.getElementById('stars');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const stars = [];
-        for(let i=0; i<100; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2});
-        function draw() {
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = "white";
-            stars.forEach(s => {
-                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
-                s.y += 0.2; if(s.y > canvas.height) s.y = 0;
-            });
-            requestAnimationFrame(draw);
-        }
-        draw();
     </script>
 </body>
 </html>
