@@ -5,105 +5,68 @@
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
-        body { margin: 0; background: #000; overflow: hidden; height: 100vh; cursor: crosshair; }
-        /* Ultra-fast stars for the transition */
-        .s { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; animation: f linear infinite; }
-        @keyframes f { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
+        body { margin: 0; background: #000; overflow: hidden; height: 100vh; cursor: crosshair; font-family: sans-serif; }
+        #canvas { position: absolute; top: 0; left: 0; }
+        .ui { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #bc13fe; }
+        h1 { font-size: 4rem; letter-spacing: 15px; margin: 0; text-shadow: 0 0 20px #bc13fe; font-weight: 900; }
+        input { margin-top: 40px; padding: 15px 35px; width: 450px; border-radius: 50px; border: 1px solid #bc13fe; background: rgba(0,0,0,0.8); color: white; outline: none; text-align: center; font-size: 1.1rem; }
+        .rbx-btn { margin-top: 20px; padding: 12px 30px; background: #bc13fe; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .rbx-btn:hover { box-shadow: 0 0 15px #bc13fe; transform: scale(1.05); }
+        iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; z-index: 9999; }
     </style>
 </head>
-<body onmousedown="launch()" onkeydown="launch()">
-    <div id="stars"></div>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="ui" id="ui">
+        <h1>GALAXY</h1>
+        <input type="text" id="url-in" placeholder="Search or Enter URL..." autofocus>
+        <button class="rbx-btn" onclick="launchRoblox()">LAUNCH ROBLOX</button>
+    </div>
+    <iframe id="content-frame"></iframe>
 
     <script>
-        for (let i = 0; i < 25; i++) {
-            let s = document.createElement('div');
-            s.className = 's';
-            let size = Math.random() * 2 + 'px';
-            s.style.width = s.style.height = size;
-            s.style.left = Math.random() * 100 + 'vw';
-            s.style.animationDuration = Math.random() * 0.5 + 0.5 + 's';
-            document.getElementById('stars').appendChild(s);
+        // Starfield Logic
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const stars = Array(100).fill().map(() => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, s: Math.random() * 2 }));
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            stars.forEach(st => { ctx.beginPath(); ctx.arc(st.x, st.y, st.s, 0, Math.PI * 2); ctx.fill(); st.y += 0.5; if (st.y > canvas.height) st.y = 0; });
+            requestAnimationFrame(draw);
         }
+        draw();
 
-        let activated = false;
+        const frame = document.getElementById('content-frame');
+        const ui = document.getElementById('ui');
 
-        function launch() {
-            if (activated) return;
-            activated = true;
-
-            const code = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Google Docs</title>
-                    <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
-                    <style>
-                        body { margin:0; background:#05010a; color:#bc13fe; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
-                        h1 { font-family: 'Courier New', monospace; font-size:4.5rem; letter-spacing:15px; margin:0; text-shadow:0 0 25px #bc13fe; font-weight:900; }
-                        input { margin-top: 40px; padding:18px 40px; width:550px; border-radius:50px; border:1px solid #bc13fe; background:rgba(0,0,0,0.9); color:white; outline:none; text-align:center; font-size:1.2rem; }
-                        .rbx-btn { margin-top: 30px; padding: 15px 40px; background: transparent; border: 2px solid #bc13fe; color: white; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
-                        .rbx-btn:hover { background: #bc13fe; box-shadow: 0 0 20px #bc13fe; transform: scale(1.1); }
-                        iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; background: #000; }
-                        .star { position:absolute; background:white; border-radius:50%; opacity:0.4; animation: fall linear infinite; }
-                        @keyframes fall { from{transform:translateY(-10vh)} to{transform:translateY(110vh)} }
-                    </style>
-                </head>
-                <body>
-                    <div id="s"></div>
-                    <div id="u">
-                        <h1>GALAXY</h1>
-                        <input type="text" id="q" placeholder="SEARCH OR ENTER URL..." autofocus>
-                        <button class="rbx-btn" onclick="openRoblox()">Launch Roblox</button>
-                    </div>
-                    <iframe id="f"></iframe>
-                    <script>
-                        for(let i=0;i<60;i++){
-                            let s=document.createElement('div'); s.className='star';
-                            let z=Math.random()*2+'px'; s.style.width=s.style.height=z;
-                            s.style.left=Math.random()*100+'vw';
-                            s.style.animationDuration=Math.random()*3+3+'s';
-                            document.getElementById('s').appendChild(s);
-                        }
-
-                        function deploy(targetUrl) {
-                            // Tab Cloaking Swap
-                            document.title = "Google Classroom";
-                            document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
-                            
-                            const f = document.getElementById('f');
-                            f.style.display = 'block';
-                            document.getElementById('u').style.display = 'none';
-                            f.contentWindow.location.replace(targetUrl);
-                        }
-
-                        function openRoblox() {
-                            // Standard web mirror for fast performance
-                            deploy('https://nowgg.lol/play/roblox-corporation/5349/roblox');
-                        }
-
-                        document.getElementById('q').addEventListener('keydown', (e) => {
-                            if(e.key === 'Enter' && e.target.value) {
-                                let v = e.target.value;
-                                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
-                                deploy(u);
-                            }
-                        });
-                    <\/script>
-                </body>
-                </html>
-            `;
-
-            // Convert code to Blob to bypass history tracking
-            const blob = new Blob([code], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
+        function deploy(url) {
+            // Tab Cloaking: Masks the tab as Google Classroom
+            document.title = "Google Classroom";
+            document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
             
-            const win = window.open('about:blank', '_blank');
-            if (win) {
-                win.location.href = blobUrl;
-                // Instant redirect to hide the entrance
-                window.location.replace("https://www.google.com");
-            }
+            // Hide UI and show the game frame
+            ui.style.display = 'none';
+            frame.style.display = 'block';
+            
+            // Bypass the "Blob" block by using a direct location replace
+            frame.contentWindow.location.replace(url);
         }
+
+        function launchRoblox() {
+            // Using a specialized mirror that handles iframe security
+            deploy('https://nowgg.lol/play/roblox-corporation/5349/roblox');
+        }
+
+        document.getElementById('url-in').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                let v = e.target.value;
+                let u = v.includes('.') ? (v.startsWith('http') ? v : 'https://' + v) : 'https://www.bing.com/search?q=' + encodeURIComponent(v);
+                deploy(u);
+            }
+        });
     </script>
 </body>
 </html>
