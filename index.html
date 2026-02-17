@@ -13,19 +13,14 @@
     <style>
         :root { 
             --bg-main: #05010a; 
-            --accent-hue: 280;
-            --accent: hsl(var(--accent-hue), 100%, 53%); 
-            --accent-glow: hsla(var(--accent-hue), 100%, 53%, 0.5);
-            --glass: rgba(10, 2, 20, 0.85); 
-            --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
-            --safe-green: #00ff99;
+            --accent: #a855f7; 
+            --border: rgba(168, 85, 247, 0.3);
+            --glass: rgba(10, 2, 20, 0.9);
         }
 
         body { 
-            margin: 0; padding: 0; 
-            font-family: 'Outfit', sans-serif; 
-            background: var(--bg-main);
-            color: #fff; overflow: hidden; height: 100vh;
+            margin: 0; padding: 0; font-family: 'Outfit', sans-serif; 
+            background: var(--bg-main); color: #fff; overflow: hidden; height: 100vh;
         }
 
         #proxy-container {
@@ -45,41 +40,46 @@
             font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; border-radius: 4px;
         }
 
-        #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
+        #stars-canvas { position: fixed; inset: 0; z-index: -1; }
         .star { position: absolute; background: #fff; border-radius: 50%; }
 
-        #main-content { text-align: center; padding-top: 20vh; height: 100vh; position: relative; z-index: 10; }
-        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 10px; margin: 20px 0; }
+        #main-content { text-align: center; padding-top: 25vh; position: relative; z-index: 10; }
+        h1 { font-family: 'Orbitron'; font-size: 3.5rem; letter-spacing: 8px; margin-bottom: 30px; }
 
-        #search-box { width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; color: white; outline: none; font-family: 'JetBrains Mono'; }
+        #search-box { 
+            width: 450px; padding: 18px; background: rgba(0,0,0,0.6); 
+            border: 1px solid var(--border); border-radius: 8px; color: white; 
+            outline: none; font-family: 'JetBrains Mono'; font-size: 1rem;
+        }
         
-        .nav-btn { display: inline-block; margin: 10px; padding: 12px 25px; border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; transition: 0.3s; }
-        .nav-btn:hover { background: var(--accent); cursor: pointer; }
-
-        #system-logs { position: fixed; bottom: 20px; left: 20px; width: 250px; height: 100px; background: rgba(0,0,0,0.8); border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--safe-green); padding: 10px; overflow: hidden; }
+        .nav-btn { 
+            display: inline-block; margin: 15px 10px; padding: 12px 30px; 
+            border: 1px solid var(--border); color: white; text-decoration: none; 
+            font-family: 'Orbitron'; font-size: 0.8rem; transition: 0.3s; background: none;
+        }
+        .nav-btn:hover { background: var(--accent); cursor: pointer; box-shadow: 0 0 15px var(--accent); }
     </style>
 </head>
-<body onmousemove="handleMouseMove(event)">
+<body>
 
     <div id="stars-canvas"></div>
-    <div id="system-logs"></div>
 
     <div id="proxy-container">
         <div id="proxy-header">
-            <span style="font-family:'Orbitron'; font-size: 0.8rem; color:var(--accent);">SECURE UPLINK ACTIVE</span>
+            <span style="font-family:'Orbitron'; font-size: 0.8rem; color:var(--accent);">DUCKDUCKGO UPLINK ACTIVE</span>
             <button class="proxy-control" onclick="closeUplink()">TERMINATE SESSION</button>
         </div>
         <iframe is="x-frame-bypass" id="proxy-frame" src=""></iframe>
     </div>
 
     <div id="main-content">
-        <h1 id="glitch-title">GALAXY PRO</h1>
+        <h1>GALAXY PRO</h1>
         <form id="search-form">
-            <input type="text" id="search-box" placeholder="ENTER URL (e.g. poki.com)...">
+            <input type="text" id="search-box" placeholder="Search DuckDuckGo securely...">
         </form>
-        <div style="margin-top: 30px;">
+        <div>
+            <button onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">OPEN SEARCH HOME</button>
             <button onclick="launchUplink('https://poki.com')" class="nav-btn">GAMES</button>
-            <button onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">SEARCH</button>
         </div>
     </div>
 
@@ -87,7 +87,6 @@
         function launchUplink(url) {
             const container = document.getElementById('proxy-container');
             const frame = document.getElementById('proxy-frame');
-            logMessage("INITIATING BYPASS UPLINK: " + url);
             frame.src = url; 
             container.style.display = 'flex';
         }
@@ -95,37 +94,23 @@
         function closeUplink() {
             document.getElementById('proxy-container').style.display = 'none';
             document.getElementById('proxy-frame').src = '';
-            logMessage("UPLINK TERMINATED.");
         }
 
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const query = document.getElementById('search-box').value;
-            let targetUrl = query.includes('.') && !query.includes(' ') ? 
-                (query.startsWith('http') ? query : 'https://' + query) : 
-                'https://duckduckgo.com/?q=' + encodeURIComponent(query);
+            // This builds the DuckDuckGo search URL
+            const targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(query);
             launchUplink(targetUrl);
         });
 
-        function handleMouseMove(e) {
-            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-        }
-
-        function logMessage(msg) {
-            const lb = document.getElementById('system-logs');
-            const div = document.createElement('div');
-            div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
-            lb.prepend(div);
-        }
-
+        // Simple Star Background
         function initStars() {
             const canvas = document.getElementById('stars-canvas');
-            for(let i=0; i<80; i++) {
+            for(let i=0; i<100; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
-                star.style.width = Math.random()*3+'px';
-                star.style.height = star.style.width;
+                star.style.width = star.style.height = Math.random()*3+'px';
                 star.style.left = Math.random()*100+'vw';
                 star.style.top = Math.random()*100+'vh';
                 star.style.opacity = Math.random();
@@ -133,7 +118,6 @@
             }
         }
         initStars();
-        logMessage("GALAXY_PRO_V2: ONLINE");
     </script>
 </body>
 </html>
