@@ -38,7 +38,7 @@
             display: flex; align-items: center; padding: 0 20px; gap: 15px; backdrop-filter: blur(10px);
         }
 
-        #proxy-frame { flex-grow: 1; border: none; background: white; }
+        #proxy-frame { flex-grow: 1; border: none; background: white; width: 100%; height: 100%; }
 
         .proxy-control {
             background: var(--accent); color: white; border: none; padding: 6px 15px;
@@ -51,10 +51,10 @@
         #main-content { text-align: center; padding-top: 20vh; height: 100vh; position: relative; z-index: 10; }
         h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 10px; margin: 20px 0; }
 
-        #search-box { width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; color: white; outline: none; }
+        #search-box { width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; color: white; outline: none; font-family: 'JetBrains Mono'; }
         
         .nav-btn { display: inline-block; margin: 10px; padding: 12px 25px; border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; transition: 0.3s; }
-        .nav-btn:hover { background: var(--accent); }
+        .nav-btn:hover { background: var(--accent); cursor: pointer; }
 
         #system-logs { position: fixed; bottom: 20px; left: 20px; width: 250px; height: 100px; background: rgba(0,0,0,0.8); border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--safe-green); padding: 10px; overflow: hidden; }
     </style>
@@ -78,8 +78,8 @@
             <input type="text" id="search-box" placeholder="ENTER URL (e.g. poki.com)...">
         </form>
         <div style="margin-top: 30px;">
-            <a href="#" onclick="launchUplink('https://poki.com')" class="nav-btn">GAMES</a>
-            <a href="#" onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">SEARCH</a>
+            <button onclick="launchUplink('https://poki.com')" class="nav-btn">GAMES</button>
+            <button onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">SEARCH</button>
         </div>
     </div>
 
