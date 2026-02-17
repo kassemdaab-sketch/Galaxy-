@@ -5,42 +5,35 @@
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
-        body { margin: 0; background: #000; overflow: hidden; height: 100vh; width: 100vw; }
-        /* High-speed falling stars for the brief transition */
-        .s {
-            position: absolute; background: #fff; border-radius: 50%;
-            opacity: 0.5; animation: f linear infinite;
-        }
+        body { margin: 0; background: #000; overflow: hidden; height: 100vh; cursor: crosshair; }
+        /* Ultra-fast stars for the transition */
+        .s { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; animation: f linear infinite; }
         @keyframes f { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
     </style>
 </head>
-<body>
-    <div id="star-field"></div>
+<body onmousedown="launch()" onkeydown="launch()">
+    <div id="stars"></div>
 
     <script>
-        // Generate stars for the black screen
-        for (let i = 0; i < 30; i++) {
+        // Transition stars
+        for (let i = 0; i < 20; i++) {
             let s = document.createElement('div');
             s.className = 's';
             let size = Math.random() * 2 + 'px';
             s.style.width = s.style.height = size;
             s.style.left = Math.random() * 100 + 'vw';
-            s.style.animationDuration = Math.random() * 1 + 1 + 's';
-            document.getElementById('star-field').appendChild(s);
+            s.style.animationDuration = Math.random() * 0.5 + 0.5 + 's';
+            document.getElementById('stars').appendChild(s);
         }
 
         let activated = false;
 
-        // Triggers as soon as any interaction is detected (mouse move, click, or touch)
         function launch() {
             if (activated) return;
             activated = true;
 
-            const win = window.open('about:blank', '_blank');
-            if (!win) return;
-
-            const doc = win.document;
-            const content = `
+            // The Interstellar "Blob" Method
+            const code = `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -48,27 +41,28 @@
                     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
                     <style>
                         body { margin:0; background:#05010a; color:#bc13fe; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
-                        h1 { font-size:4rem; letter-spacing:15px; margin:0 0 20px 0; text-shadow:0 0 20px #bc13fe; font-weight:900; }
-                        input { padding:15px 35px; width:450px; border-radius:50px; border:1px solid #bc13fe; background:rgba(0,0,0,0.8); color:white; outline:none; text-align:center; font-size:1.1rem; }
+                        h1 { font-family: 'Courier New', monospace; font-size:4.5rem; letter-spacing:15px; margin:0; text-shadow:0 0 25px #bc13fe; font-weight:900; animation: glow 2s infinite; }
+                        @keyframes glow { 50% { opacity: 0.6; } }
+                        input { margin-top: 40px; padding:18px 40px; width:550px; border-radius:50px; border:1px solid #bc13fe; background:rgba(0,0,0,0.9); color:white; outline:none; text-align:center; font-size:1.2rem; box-shadow: 0 0 15px rgba(188, 19, 254, 0.2); }
                         iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; }
-                        .star { position:absolute; background:white; border-radius:50%; opacity:0.6; animation: fall linear infinite; }
+                        .star { position:absolute; background:white; border-radius:50%; opacity:0.4; animation: fall linear infinite; }
                         @keyframes fall { from{transform:translateY(-10vh)} to{transform:translateY(110vh)} }
                     </style>
                 </head>
                 <body>
-                    <div id="stars"></div>
-                    <div id="ui">
+                    <div id="s"></div>
+                    <div id="u">
                         <h1>GALAXY</h1>
-                        <input type="text" id="q" placeholder="Search or Enter URL..." autofocus>
+                        <input type="text" id="q" placeholder="ENTER SYSTEM COORDINATES (URL/SEARCH)" autofocus>
                     </div>
                     <iframe id="f"></iframe>
                     <script>
-                        for(let i=0;i<50;i++){
+                        for(let i=0;i<60;i++){
                             let s=document.createElement('div'); s.className='star';
                             let z=Math.random()*2+'px'; s.style.width=s.style.height=z;
                             s.style.left=Math.random()*100+'vw';
-                            s.style.animationDuration=Math.random()*2+2+'s';
-                            document.getElementById('stars').appendChild(s);
+                            s.style.animationDuration=Math.random()*3+3+'s';
+                            document.getElementById('s').appendChild(s);
                         }
                         const q = document.getElementById('q');
                         const f = document.getElementById('f');
@@ -79,7 +73,7 @@
                                 document.title = "Google Classroom";
                                 document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
                                 f.style.display = 'block';
-                                document.getElementById('ui').style.display = 'none';
+                                document.getElementById('u').style.display = 'none';
                                 f.contentWindow.location.replace(u);
                             }
                         });
@@ -88,19 +82,17 @@
                 </html>
             `;
 
-            doc.open();
-            doc.write(content);
-            doc.close();
-
-            // The original tab cleans itself by going to Google
-            window.location.replace("https://www.google.com");
+            // This converts the code into a 'Blob' which bypasses most history tracking
+            const blob = new Blob([code], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const win = window.open('about:blank', '_blank');
+            if (win) {
+                win.location.href = blobUrl;
+                // Instant redirect of the original tab
+                window.location.replace("https://www.google.com");
+            }
         }
-
-        // Listeners to ensure it launches as fast as possible on any input
-        window.addEventListener('mousemove', launch);
-        window.addEventListener('mousedown', launch);
-        window.addEventListener('keydown', launch);
-        window.addEventListener('touchstart', launch);
     </script>
 </body>
 </html>
