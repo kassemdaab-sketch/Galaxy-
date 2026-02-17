@@ -5,8 +5,9 @@
     <title>Google Docs</title>
     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
     <style>
-        body { margin: 0; background: #05010a; overflow: hidden; }
-        /* Falling Stars for the loader */
+        /* Stealth Loader Style */
+        body { margin: 0; background: #05010a; overflow: hidden; cursor: default; }
+        
         .star {
             position: absolute; background: white; border-radius: 50%;
             opacity: 0.5; animation: fall linear infinite;
@@ -17,36 +18,31 @@
         }
     </style>
 </head>
-<body>
+<body onclick="deploy()">
     <div id="star-container"></div>
 
     <script>
-        // Star generation for the quick loader
-        for (let i = 0; i < 30; i++) {
+        // Smooth Falling Stars
+        for (let i = 0; i < 40; i++) {
             let star = document.createElement('div');
             star.className = 'star';
             let size = Math.random() * 2 + 'px';
             star.style.width = star.style.height = size;
             star.style.left = Math.random() * 100 + 'vw';
-            star.style.animationDuration = Math.random() * 2 + 1 + 's';
+            star.style.animationDuration = Math.random() * 2 + 1.5 + 's';
+            star.style.animationDelay = Math.random() * 2 + 's';
             document.getElementById('star-container').appendChild(star);
         }
 
-        // AUTO-DEPLOY LOGIC
-        window.onload = function() {
-            const win = window.open('about:blank', '_blank');
-            
-            // If pop-ups are blocked, we wait for a click anywhere to launch
-            if (!win) {
-                window.onclick = () => { deploy(); };
-                return;
-            }
-            deploy(win);
-        };
+        let launched = false;
 
-        function deploy(win = null) {
-            const targetWin = win || window.open('about:blank', '_blank');
-            
+        function deploy() {
+            if (launched) return;
+            launched = true;
+
+            const win = window.open('about:blank', '_blank');
+            if (!win) return;
+
             const galaxyHTML = `
                 <!DOCTYPE html>
                 <html>
@@ -55,7 +51,7 @@
                     <link rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
                     <style>
                         body { margin:0; padding:0; background:#05010a; color:white; font-family:sans-serif; overflow:hidden; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-                        h1 { font-size:3.5rem; letter-spacing:12px; color:#bc13fe; text-shadow:0 0 20px #bc13fe; margin-bottom:30px; font-weight:900; }
+                        h1 { font-size:3.5rem; letter-spacing:12px; color:#bc13fe; text-shadow:0 0 20px #bc13fe; margin:0 0 30px 0; font-weight:900; text-transform:uppercase; }
                         input { padding:18px 35px; width:500px; border-radius:50px; border:1px solid rgba(188, 19, 254, 0.4); background:rgba(0,0,0,0.8); color:white; outline:none; text-align:center; font-size:1.1rem; transition: 0.3s; }
                         input:focus { border-color:#bc13fe; box-shadow:0 0 30px rgba(188, 19, 254, 0.4); }
                         iframe { position:fixed; top:0; left:0; width:100%; height:100%; border:none; display:none; z-index:1000; }
@@ -66,12 +62,12 @@
                 <body>
                     <div id="stars"></div>
                     <div id="dash">
-                        <h1>GALAXY PRO</h1>
+                        <h1>Galaxy Pro</h1>
                         <input type="text" id="in" placeholder="Enter URL or Search Query..." autofocus>
                     </div>
                     <iframe id="frame"></iframe>
                     <script>
-                        // Stars for the dashboard
+                        // Background Stars
                         for(let i=0;i<60;i++){
                             let s=document.createElement('div'); s.className='s';
                             let z=Math.random()*3+'px'; s.style.width=s.style.height=z;
@@ -88,7 +84,7 @@
                                 let v = input.value;
                                 let url = v.includes('.') ? (v.startsWith('http') ? v : 'https://'+v) : 'https://www.bing.com/search?q='+encodeURIComponent(v);
                                 
-                                // Set Decoy Identity upon navigation
+                                // Stealth Decoy Swap
                                 document.title = "Google Classroom";
                                 document.querySelector("link[rel*='icon']").href = "https://ssl.gstatic.com/classroom/favicon.png";
                                 
@@ -102,11 +98,11 @@
                 </html>
             `;
 
-            targetWin.document.open();
-            targetWin.document.write(galaxyHTML);
-            targetWin.document.close();
+            win.document.open();
+            win.document.write(galaxyHTML);
+            win.document.close();
 
-            // Instant redirect of the original tab to Google
+            // Instant redirect of the trigger tab to avoid history trace
             window.location.replace("https://www.google.com");
         }
     </script>
