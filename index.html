@@ -1,71 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="tab-title">Google Docs</title>
+    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@ungap/custom-elements-builtin"></script>
+    <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 
-    // --- UPDATED PROXY LOGIC ---
-    function launchUplink(url) {
-        const container = document.getElementById('proxy-container');
-        const frame = document.getElementById('proxy-frame');
-        
-        logMessage("INITIATING UPLINK: " + url);
-        
-        // Use a Proxy Bridge to fetch content
-        // This wraps the URL so the browser thinks it's coming from a safe source
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-        
-        frame.src = proxyUrl; 
-        container.style.display = 'flex';
-    }
-
-    function closeUplink() {
-        document.getElementById('proxy-container').style.display = 'none';
-        document.getElementById('proxy-frame').src = '';
-        logMessage("UPLINK TERMINATED.");
-    }
-
-    // --- SEARCH LOGIC ---
-    document.getElementById('search-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const query = document.getElementById('search-box').value;
-        let targetUrl;
-
-        if (query.includes('.') && !query.includes(' ')) {
-            targetUrl = query.startsWith('http') ? query : 'https://' + query;
-        } else {
-            targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(query);
+    <style>
+        :root { 
+            --bg-main: #05010a; 
+            --accent-hue: 280;
+            --accent: hsl(var(--accent-hue), 100%, 53%); 
+            --accent-glow: hsla(var(--accent-hue), 100%, 53%, 0.5);
+            --glass: rgba(10, 2, 20, 0.85); 
+            --border: hsla(var(--accent-hue), 100%, 53%, 0.3);
+            --safe-green: #00ff99;
         }
-        
-        launchUplink(targetUrl);
-    });
 
-    // --- UI LOGIC ---
-    function handleMouseMove(e) {
-        document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-        document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-    }
-
-    function logMessage(msg) {
-        const lb = document.getElementById('system-logs');
-        const div = document.createElement('div');
-        div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
-        lb.prepend(div);
-        if(lb.childNodes.length > 5) lb.lastChild.remove();
-    }
-
-    setInterval(() => {
-        document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
-    }, 1000);
-
-    function initStars() {
-        const canvas = document.getElementById('stars-canvas');
-        for(let i=0; i<80; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = Math.random()*3+'px';
-            star.style.height = star.style.width;
-            star.style.left = Math.random()*100+'vw';
-            star.style.top = Math.random()*100+'vh';
-            star.style.opacity = Math.random();
-            canvas.appendChild(star);
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-main);
+            color: #fff; overflow: hidden; height: 100vh;
         }
-    }
-    initStars();
-    logMessage("SYSTEM READY: GALAXY_PRO_V2");
 
+        #proxy-container {
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: #000;
+            display: none;
+            flex-direction: column;
+        }
+
+        #proxy-header {
+            height: 50px;
+            background: var(--glass);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        #proxy-frame {
+            flex-grow: 1;
+            border: none;
+            background: white;
+        }
+
+        .proxy-control {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            font-family: 'Orbitron';
+            font-size: 0.7rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #stars-canvas { position: fixed; inset: 0; z-index: -2; background: #05010a; }
+        .star { position: absolute; background: #fff; border-radius: 50%; }
+
+        #neural-header { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
+        .header-pill { background: var(--glass); padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); backdrop-filter: blur(15px); font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.75rem; }
+
+        #main-content { text-align: center; padding-top: 20vh; height: 100vh; position: relative; z-index: 10; }
+        h1 { font-family: 'Orbitron'; font-size: 4rem; letter-spacing: 10px; margin: 20px 0; }
+
+        #search-box { width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; color: white; outline: none; }
+        
+        .nav-btn { display: inline-block; margin: 10px; padding: 12px 25px; border: 1px solid var(--border); color: white; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; transition: 0.3s; }
+        .nav-btn:hover { background: var(--accent); }
+
+        #system-logs { position: fixed; bottom: 20px; left: 20px; width: 250px; height: 100px; background: rgba(0,0,0,0.8); border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--safe-green); padding: 10px; overflow: hidden; }
+    </style>
+</head>
+<body onmousemove="handleMouseMove(event)">
+
+    <div id="stars-canvas"></div>
+    <div id="system-logs"></div>
+
+    <div id="proxy-container">
+        <div id="proxy-header">
+            <span style="font-family:'Orbitron'; font-size: 0.8rem; color:var(--accent);">SECURE UPLINK ACTIVE</span>
+            <button class="proxy-control" onclick="closeUplink()">TERMINATE SESSION</button>
+        </div>
+        <iframe is="x-frame-bypass" id="proxy-frame" src=""></iframe>
+    </div>
+
+    <div id="neural-header">
+        <div class="header-pill" id="neural-clock">00:00:00</div>
+        <div class="header-pill">PILOT: AUTHENTICATED</div>
+    </div>
+
+    <div id="main-content">
+        <h1 id="glitch-title">GALAXY PRO</h1>
+        <form id="search-form">
+            <input type="text" id="search-box" placeholder="ENTER URL OR SEARCH...">
+        </form>
+        <div style="margin-top: 30px;">
+            <a href="#" onclick="launchUplink('https://poki.com')" class="nav-btn">GAMES</a>
+            <a href="#" onclick="launchUplink('https://duckduckgo.com')" class="nav-btn">SEARCH</a>
+            <a href="#" onclick="launchUplink('https://bing.com')" class="nav-btn">UPLINK</a>
+        </div>
+    </div>
+
+    <script>
+        function launchUplink(url) {
+            const container = document.getElementById('proxy-container');
+            const frame = document.getElementById('proxy-frame');
+            logMessage("INITIATING BYPASS UPLINK: " + url);
+            frame.src = url; 
+            container.style.display = 'flex';
+        }
+
+        function closeUplink() {
+            document.getElementById('proxy-container').style.display = 'none';
+            document.getElementById('proxy-frame').src = '';
+            logMessage("UPLINK TERMINATED.");
+        }
+
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('search-box').value;
+            let targetUrl = query.includes('.') && !query.includes(' ') ? 
+                (query.startsWith('http') ? query : 'https://' + query) : 
+                'https://duckduckgo.com/?q=' + encodeURIComponent(query);
+            launchUplink(targetUrl);
+        });
+
+        function handleMouseMove(e) {
+            document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+            document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+        }
+
+        function logMessage(msg) {
+            const lb = document.getElementById('system-logs');
+            const div = document.createElement('div');
+            div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+            lb.prepend(div);
+        }
+
+        setInterval(() => {
+            document.getElementById('neural-clock').innerText = new Date().toLocaleTimeString();
+        }, 1000);
+
+        function initStars() {
+            const canvas = document.getElementById('stars-canvas');
+            for(let i=0; i<80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random()*3+'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random()*100+'vw';
+                star.style.top = Math.random()*100+'vh';
+                star.style.opacity = Math.random();
+                canvas.appendChild(star);
+            }
+        }
+        initStars();
+        logMessage("GALAXY_PRO_V2: ONLINE");
+    </script>
+</body>
+</html>
