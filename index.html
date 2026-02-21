@@ -1,35 +1,29 @@
-const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Pro Dashboard</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        input { padding: 10px; width: 300px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Galaxy Pro</h1>
+    <p>Enter a URL to browse without restrictions:</p>
+    <input type="text" id="urlInput" placeholder="https://google.com">
+    <button onclick="launchProxy()">Search</button>
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.static(__dirname));
-
-app.use('/service', (req, res, next) => {
-    const target = req.query.url;
-    if (!target) return res.status(400).send('No target URL provided.');
-
-    return createProxyMiddleware({
-        target: target,
-        changeOrigin: true,
-        followRedirects: true,
-        onProxyRes: (proxyRes) => {
-            // This is the specific list that kills the black screen
-            delete proxyRes.headers['x-frame-options'];
-            delete proxyRes.headers['content-security-policy'];
-            delete proxyRes.headers['frame-options'];
-            delete proxyRes.headers['frame-ancestors'];
-        },
-        onError: (err, req, res) => {
-            res.status(500).send('Uplink Error');
+    <script>
+        function launchProxy() {
+            const targetUrl = document.getElementById('urlInput').value;
+            if (targetUrl) {
+                // This points to your new /api/proxy engine!
+                window.location.href = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+            }
         }
-    })(req, res, next);
-});
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.listen(PORT, () => console.log('Galaxy Pro Active'));
+    </script>
+</body>
+</html>
