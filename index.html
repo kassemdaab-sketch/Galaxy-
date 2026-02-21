@@ -6,22 +6,25 @@
     <title>Galaxy Pro Dashboard</title>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        input { padding: 10px; width: 300px; border-radius: 5px; border: none; }
-        button { padding: 10px 20px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; }
+        input { padding: 12px; width: 300px; border-radius: 5px; border: 1px solid #333; background: #111; color: #fff; }
+        button { padding: 12px 24px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #0060df; }
     </style>
 </head>
 <body>
-    <h1>Galaxy Pro</h1>
-    <p>Enter a URL to browse without restrictions:</p>
-    <input type="text" id="urlInput" placeholder="https://google.com">
-    <button onclick="launchProxy()">Search</button>
+    <h1>Galaxy Pro Dashboard</h1>
+    <p>Enter a URL to browse through your new proxy engine:</p>
+    <input type="text" id="urlInput" placeholder="https://www.google.com">
+    <button onclick="launchProxy()">Launch</button>
 
     <script>
         function launchProxy() {
             const targetUrl = document.getElementById('urlInput').value;
             if (targetUrl) {
-                // This points to your new /api/proxy engine!
+                // This sends the URL to your /api/proxy.js engine!
                 window.location.href = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+            } else {
+                alert("Please enter a URL first!");
             }
         }
     </script>
