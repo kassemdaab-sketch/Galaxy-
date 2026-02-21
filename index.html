@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galaxy Pro Proxy</title>
     <style>
+        /* This creates your black framework and blue button */
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
         input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
@@ -14,7 +15,7 @@
 </head>
 <body>
     <div id="proxy-header">
-        <input type="text" id="urlInput" placeholder="Enter URL or search term...">
+        <input type="text" id="urlInput" placeholder="Search or enter URL...">
         <button onclick="launch()">Go</button>
     </div>
 
@@ -29,15 +30,16 @@
             if (input.includes('.') && !input.includes(' ')) {
                 targetUrl = input.startsWith('http') ? input : 'https://' + input;
             } else {
-                // Bing is much more reliable for Node.js proxies
+                // Using Bing as it is the most stable for Node.js proxies
                 targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
             }
 
-            // Connects to your Node.js engine at /api/proxy
+            // This connects your dashboard to your Node.js engine
             const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
             document.getElementById('content-frame').src = proxyPath;
         }
 
+        // Hit Enter to search
         document.getElementById("urlInput").addEventListener("keypress", (e) => {
             if (e.key === "Enter") launch();
         });
