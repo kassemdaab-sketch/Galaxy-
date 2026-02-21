@@ -5,22 +5,22 @@
 
         let targetUrl = "";
 
-        // 1. Check if it's a direct URL (like google.com)
+        // 1. Check if the user typed a specific website (e.g., google.com)
         if (input.includes('.') && !input.includes(' ')) {
             targetUrl = input.startsWith('http') ? input : 'https://' + input;
         } 
-        // 2. Otherwise, treat it as a search term for DuckDuckGo
+        // 2. If it's just words, go STRAIGHT to DuckDuckGo results
         else {
-            // This builds the search link so it doesn't just go to the homepage
+            // This '?q=' is the magic part that skips the homepage logo
             targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
         }
 
-        // 3. Send the search/URL through your proxy engine into the iframe
+        // 3. Load the results through your proxy into the framework
         const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
         document.getElementById('content-frame').src = proxyUrl;
     }
 
-    // This makes the 'Enter' key work so you don't always have to click 'Go'
+    // Allow the 'Enter' key to work too
     document.getElementById("urlInput").addEventListener("keypress", (e) => {
         if (e.key === "Enter") launch();
     });
