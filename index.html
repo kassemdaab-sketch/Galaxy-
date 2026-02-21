@@ -9,13 +9,13 @@
         #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
         input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
         button { padding: 10px 25px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        /* This keeps the website below your search bar */
+        /* This keeps the website perfectly below your black search bar */
         iframe { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
     </style>
 </head>
 <body>
     <div id="proxy-header">
-        <input type="text" id="urlInput" placeholder="Search or enter URL...">
+        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter URL...">
         <button onclick="launch()">Go</button>
     </div>
 
@@ -31,18 +31,18 @@
             if (query.includes('.') && !query.includes(' ')) {
                 targetUrl = query.startsWith('http') ? query : 'https://' + query;
             } else {
-                // Using DuckDuckGo Lite to avoid those big ads seen in your recording
+                // Using DuckDuckGo Lite to avoid the clutter seen in your recording
                 targetUrl = `https://duckduckgo.com/lite/?q=${encodeURIComponent(query)}`;
             }
 
-            // Route through your Node.js engine
+            // This routes through your Node.js engine
             const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
             
-            // Fix 1: Target the iframe explicitly
+            // Fix 1: Explicitly target the iframe so the main page URL doesn't change
             document.getElementById('content-frame').src = proxyPath;
 
-            // Fix 2: Keep the search bar showing ONLY what the user typed
-            // This stops the /api/proxy?url=... text from appearing in the UI
+            // Fix 2: Keep the search bar showing ONLY what you typed
+            // This prevents the /api/proxy?url=... text from appearing in the UI
             inputField.value = query;
         }
 
