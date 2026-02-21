@@ -1,53 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Pro Proxy</title>
-    <style>
-        /* This makes the page fill the whole screen without scrollbars */
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
-        
-        /* The top bar where your search lives */
-        #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
-        input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
-        button { padding: 10px 25px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        button:hover { background: #0060df; }
+<script>
+    function launch() {
+        const input = document.getElementById('urlInput').value.trim();
+        if (!input) return;
 
-        /* The actual frame where the website lives */
-        #content-frame { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
-    </style>
-</head>
-<body>
-    <div id="proxy-header">
-        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter a URL...">
-        <button onclick="launch()">Go</button>
-    </div>
+        let targetUrl = "";
 
-    <iframe id="content-frame" src="about:blank"></iframe>
-
-    <script>
-        function launch() {
-            const input = document.getElementById('urlInput').value.trim();
-            if (!input) return;
-
-            let targetUrl = "";
-            // If it's a URL, use it; if it's text, search DuckDuckGo
-            if (input.includes('.') && !input.includes(' ')) {
-                targetUrl = input.startsWith('http') ? input : 'https://' + input;
-            } else {
-                targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
-            }
-
-            // CRITICAL: Point the IFRAME to the proxy, NOT the whole window
-            const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-            document.getElementById('content-frame').src = proxyUrl;
+        // 1. Check if it's a direct URL (like google.com)
+        if (input.includes('.') && !input.includes(' ')) {
+            targetUrl = input.startsWith('http') ? input : 'https://' + input;
+        } 
+        // 2. Otherwise, treat it as a search term for DuckDuckGo
+        else {
+            // This builds the search link so it doesn't just go to the homepage
+            targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
         }
 
-        // Handle 'Enter' key
-        document.getElementById("urlInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") launch();
-        });
-    </script>
-</body>
-</html>
+        // 3. Send the search/URL through your proxy engine into the iframe
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+        document.getElementById('content-frame').src = proxyUrl;
+    }
+
+    // This makes the 'Enter' key work so you don't always have to click 'Go'
+    document.getElementById("urlInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") launch();
+    });
+</script>
