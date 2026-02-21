@@ -1,5 +1,5 @@
 {
-  "name": "galaxy-proxy-node",
+  "name": "galaxy-proxy",
   "version": "1.0.0",
   "dependencies": {
     "http-proxy-middleware": "^3.0.0"
