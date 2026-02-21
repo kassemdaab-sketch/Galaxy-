@@ -4,25 +4,15 @@
         if (!input) return;
 
         let targetUrl = "";
-
-        // 1. If it's a URL (has a dot and no spaces), go there directly
         if (input.includes('.') && !input.includes(' ')) {
-            // Add https:// if the user forgot it
             targetUrl = input.startsWith('http') ? input : 'https://' + input;
-        } 
-        // 2. If it's a search term, use DuckDuckGo's result page
-        else {
-            // Using the '/html' endpoint for better compatibility in iframes
+        } else {
+            // Using the /html endpoint for better Node.js iframe compatibility
             targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
         }
 
-        // 3. Load through the proxy engine into your frame
+        // This links the HTML to your Node.js engine
         const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
         document.getElementById('content-frame').src = proxyUrl;
     }
-
-    // This makes the 'Enter' key work for a better user experience
-    document.getElementById("urlInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") launch();
-    });
 </script>
