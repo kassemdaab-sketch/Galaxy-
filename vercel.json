@@ -1,25 +1,7 @@
-const { createProxyMiddleware } = require('http-proxy-middleware');
-
-module.exports = (req, res) => {
-    const target = req.query.url;
-    
-    if (!target) {
-        return res.status(400).send('Error: No target URL provided.');
-    }
-
-    return createProxyMiddleware({
-        target: target,
-        changeOrigin: true,
-        followRedirects: true,
-        // This is the Node.js logic that kills the "Black Screen"
-        onProxyRes: (proxyRes) => {
-            delete proxyRes.headers['x-frame-options'];
-            delete proxyRes.headers['content-security-policy'];
-            delete proxyRes.headers['frame-options'];
-        },
-        // Error handling for dead links
-        onError: (err, req, res) => {
-            res.status(500).send('Proxy Error: Could not reach the site.');
-        }
-    })(req, res);
-};
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/proxy", "destination": "/api/proxy.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
