@@ -1,23 +1,15 @@
-<script>
-    function launch() {
-        const input = document.getElementById('urlInput').value.trim();
-        if (!input) return;
+function launch() {
+    const input = document.getElementById('urlInput').value.trim();
+    if (!input) return;
 
-        let targetUrl = "";
-        // If it's a URL, use it; otherwise, use DuckDuckGo HTML search
-        if (input.includes('.') && !input.includes(' ')) {
-            targetUrl = input.startsWith('http') ? input : 'https://' + input;
-        } else {
-            // Using /html/ ensures better loading inside your framework
-            targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
-        }
-
-        // Link the dashboard to your Node.js proxy engine
-        const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-        document.getElementById('content-frame').src = proxyUrl;
+    let targetUrl = "";
+    if (input.includes('.') && !input.includes(' ')) {
+        targetUrl = input.startsWith('http') ? input : 'https://' + input;
+    } else {
+        // This ensures the search results load properly in Node.js
+        targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
     }
 
-    document.getElementById("urlInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") launch();
-    });
-</script>
+    const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+    document.getElementById('content-frame').src = proxyPath;
+}
