@@ -26,13 +26,15 @@
             if (!input) return;
 
             let targetUrl = "";
+            // Check if it's a URL or a search term
             if (input.includes('.') && !input.includes(' ')) {
                 targetUrl = input.startsWith('http') ? input : 'https://' + input;
             } else {
+                // Using DuckDuckGo's HTML search for maximum compatibility
                 targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
             }
 
-            // This connects your dashboard to your Node.js engine
+            // IMPORTANT: This matches your vercel.json rewrite rule
             const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
             document.getElementById('content-frame').src = proxyPath;
         }
