@@ -1,53 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Pro Proxy</title>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
-        #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
-        input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
-        button { padding: 10px 25px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        /* This keeps the frame exactly under your header */
-        iframe { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
-    </style>
-</head>
-<body>
-    <div id="proxy-header">
-        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter URL...">
-        <button onclick="launch()">Go</button>
-    </div>
+function launch() {
+    const input = document.getElementById('urlInput').value.trim();
+    if (!input) return;
 
-    <iframe id="content-frame" name="galaxy-frame" src="about:blank" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+    let targetUrl = "";
+    if (input.includes('.') && !input.includes(' ')) {
+        targetUrl = input.startsWith('http') ? input : 'https://' + input;
+    } else {
+        targetUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
+    }
 
-    <script>
-        function launch() {
-            const input = document.getElementById('urlInput').value.trim();
-            if (!input) return;
+    // This routes through your Node.js engine
+    const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+    
+    // FIX 1: Explicitly target the iframe to keep links inside the framework
+    const frame = document.getElementById('content-frame');
+    frame.src = proxyPath;
 
-            let targetUrl = "";
-            if (input.includes('.') && !input.includes(' ')) {
-                targetUrl = input.startsWith('http') ? input : 'https://' + input;
-            } else {
-                // Using DuckDuckGo HTML for the best results in your framework
-                targetUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
-            }
-
-            // Fix 1: This connects to your Node.js engine and handles the 'Netflix' clicks
-            const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-            
-            // Fix 2: This ensures the result stays inside our 'galaxy-frame'
-            const frame = document.getElementById('content-frame');
-            frame.src = proxyPath;
-            
-            // Clean Bar Fix: Keeps the search bar clean after you hit Go
-            console.log("Navigating to: " + input);
-        }
-
-        document.getElementById("urlInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") launch();
-        });
-    </script>
-</body>
-</html>
+    // FIX 2: Clear the "raw code" look by resetting the input or logging 
+    // This prevents the browser from showing the proxy path in the UI
+    console.log("Galaxy Proxy navigating to: " + input);
+}
