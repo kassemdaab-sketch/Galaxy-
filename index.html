@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Pro Dashboard</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        input { padding: 12px; width: 300px; border-radius: 5px; border: 1px solid #333; background: #111; color: #fff; }
+        button { padding: 12px 24px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Galaxy Pro</h1>
+    <p>Enter a URL to browse through the proxy:</p>
+    <input type="text" id="urlInput" placeholder="https://www.google.com">
+    <button onclick="launch()">Search</button>
+    <script>
+        function launch() {
+            const url = document.getElementById('urlInput').value;
+            if (url) {
+                // This sends the site to your api/proxy.js engine
+                window.location.href = `/api/proxy?url=${encodeURIComponent(url)}`;
+            }
+        }
+    </script>
+</body>
+</html>
