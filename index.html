@@ -1,47 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Pro Proxy</title>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
-        #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
-        input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
-        button { padding: 10px 25px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        iframe { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
-    </style>
-</head>
-<body>
-    <div id="proxy-header">
-        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter a URL...">
-        <button onclick="launch()">Go</button>
-    </div>
+function launch() {
+    const input = document.getElementById('urlInput').value.trim();
+    if (!input) return;
 
-    <iframe id="content-frame" src="about:blank"></iframe>
+    let targetUrl = "";
+    if (input.includes('.') && !input.includes(' ')) {
+        targetUrl = input.startsWith('http') ? input : 'https://' + input;
+    } else {
+        // We are using the standard search URL now because the proxy will handle the rest
+        targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
+    }
 
-    <script>
-        function launch() {
-            const input = document.getElementById('urlInput').value.trim();
-            if (!input) return;
-
-            let targetUrl = "";
-            // Check if it's a URL or a search term
-            if (input.includes('.') && !input.includes(' ')) {
-                targetUrl = input.startsWith('http') ? input : 'https://' + input;
-            } else {
-                // Using DuckDuckGo's HTML search for maximum compatibility
-                targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
-            }
-
-            // IMPORTANT: This matches your vercel.json rewrite rule
-            const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-            document.getElementById('content-frame').src = proxyPath;
-        }
-
-        document.getElementById("urlInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") launch();
-        });
-    </script>
-</body>
-</html>
+    // This MUST match the way your proxy reads the "url" variable
+    const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+    document.getElementById('content-frame').src = proxyPath;
+}
