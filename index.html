@@ -4,15 +4,20 @@
         if (!input) return;
 
         let targetUrl = "";
+        // If it's a URL, use it; otherwise, use DuckDuckGo HTML search
         if (input.includes('.') && !input.includes(' ')) {
             targetUrl = input.startsWith('http') ? input : 'https://' + input;
         } else {
-            // Using the /html endpoint for better Node.js iframe compatibility
+            // Using /html/ ensures better loading inside your framework
             targetUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
         }
 
-        // This links the HTML to your Node.js engine
+        // Link the dashboard to your Node.js proxy engine
         const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
         document.getElementById('content-frame').src = proxyUrl;
     }
+
+    document.getElementById("urlInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") launch();
+    });
 </script>
