@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Pro Dashboard</title>
+    <title>Galaxy Pro Proxy</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #navbar { height: 60px; display: flex; align-items: center; justify-content: center; background: #111; border-bottom: 1px solid #333; }
-        input { padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; margin-right: 10px; }
-        button { padding: 10px 20px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        /* This is the magic window */
-        iframe { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
+        /* This makes the page fill the whole screen without scrollbars */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        
+        /* The top bar where your search lives */
+        #proxy-header { height: 60px; background: #111; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #0070f3; box-sizing: border-box; }
+        input { flex-grow: 1; max-width: 500px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; margin-right: 15px; outline: none; }
+        button { padding: 10px 25px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #0060df; }
+
+        /* The actual frame where the website lives */
+        #content-frame { width: 100%; height: calc(100% - 60px); border: none; background: #fff; }
     </style>
 </head>
 <body>
-    <div id="navbar">
-        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter URL...">
-        <button onclick="launch()">Launch</button>
+    <div id="proxy-header">
+        <input type="text" id="urlInput" placeholder="Search DuckDuckGo or enter a URL...">
+        <button onclick="launch()">Go</button>
     </div>
 
-    <iframe id="proxyFrame" src="about:blank"></iframe>
+    <iframe id="content-frame" src="about:blank"></iframe>
 
     <script>
         function launch() {
@@ -27,19 +32,19 @@
             if (!input) return;
 
             let targetUrl = "";
+            // If it's a URL, use it; if it's text, search DuckDuckGo
             if (input.includes('.') && !input.includes(' ')) {
                 targetUrl = input.startsWith('http') ? input : 'https://' + input;
             } else {
-                // Default search engine: DuckDuckGo
                 targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
             }
 
-            // This tells the iframe to load the site THROUGH your proxy engine
-            const proxyPath = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-            document.getElementById('proxyFrame').src = proxyPath;
+            // CRITICAL: Point the IFRAME to the proxy, NOT the whole window
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+            document.getElementById('content-frame').src = proxyUrl;
         }
 
-        // Search on Enter key
+        // Handle 'Enter' key
         document.getElementById("urlInput").addEventListener("keypress", (e) => {
             if (e.key === "Enter") launch();
         });
