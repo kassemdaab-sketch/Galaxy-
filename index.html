@@ -6,23 +6,44 @@
     <title>Galaxy Pro Dashboard</title>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        input { padding: 12px; width: 300px; border-radius: 5px; border: 1px solid #333; background: #111; color: #fff; }
+        input { padding: 12px; width: 350px; border-radius: 5px; border: 1px solid #333; background: #111; color: #fff; outline: none; }
         button { padding: 12px 24px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #0060df; }
     </style>
 </head>
 <body>
     <h1>Galaxy Pro</h1>
-    <p>Enter a URL to browse through the proxy:</p>
-    <input type="text" id="urlInput" placeholder="https://www.google.com">
-    <button onclick="launch()">Search</button>
+    <p>Search DuckDuckGo or enter a URL:</p>
+    
+    <input type="text" id="urlInput" placeholder="Search or type a URL...">
+    <button onclick="launch()">Launch</button>
+
     <script>
         function launch() {
-            const url = document.getElementById('urlInput').value;
-            if (url) {
-                // This sends the site to your api/proxy.js engine
-                window.location.href = `/api/proxy?url=${encodeURIComponent(url)}`;
+            const input = document.getElementById('urlInput').value.trim();
+            if (!input) return alert("Please enter something!");
+
+            let targetUrl = "";
+
+            // Check if user typed a URL (like google.com) or a search term
+            if (input.includes('.') && !input.includes(' ')) {
+                // If it looks like a URL, add https:// if missing
+                targetUrl = input.startsWith('http') ? input : 'https://' + input;
+            } else {
+                // Otherwise, search DuckDuckGo
+                targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
             }
+
+            // This routes the request through your proxy engine!
+            window.location.href = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
         }
+
+        // Allow pressing "Enter" to search
+        document.getElementById("urlInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                launch();
+            }
+        });
     </script>
 </body>
 </html>
